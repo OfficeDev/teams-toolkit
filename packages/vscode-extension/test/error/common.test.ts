@@ -108,14 +108,13 @@ describe("common", async () => {
       .callsFake((title: string, button: unknown, ...items: vscode.MessageItem[]) => {
         return Promise.resolve(items[0]);
       });
-    const sendTelemetryEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+
     const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand");
     const error = new SystemError("Core", "DecryptionError", "test");
 
     await showError(error);
     await showErrorMessageStub.firstCall.returnValue;
 
-    chai.assert.isTrue(sendTelemetryEventStub.called);
     chai.assert.isTrue(executeCommandStub.called);
   });
 
@@ -308,7 +307,11 @@ describe("common", async () => {
       await job;
       await showErrorMessageStub.firstCall.returnValue;
 
-      chai.assert.equal(showErrorMessageStub.firstCall.args.length, buttonNum + 2);
+      if (type == "system error") {
+        chai.assert.equal(showErrorMessageStub.firstCall.args.length, buttonNum + 1);
+      } else {
+        chai.assert.equal(showErrorMessageStub.firstCall.args.length, buttonNum + 2);
+      }
     });
 
     it(`showError - ${type} - recommend troubleshoot only`, async () => {

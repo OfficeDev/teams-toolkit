@@ -136,6 +136,7 @@ import {
 } from "./handlers/migrationHandler";
 import * as officeDevHandlers from "./handlers/officeDevHandlers";
 import {
+  findGitHubSimilarIssue,
   openAccountLinkHandler,
   openAppManagement,
   openAzureAccountHandler,
@@ -444,6 +445,13 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
     () => Correlator.run(migrateTeamsTabAppHandler)
   );
   context.subscriptions.push(migrateTeamsTabAppCmd);
+
+  // Similar issue
+  const findSimilarIssue = vscode.commands.registerCommand(
+    "fx-extension.findSimilarIssue",
+    (...args) => Correlator.run(findGitHubSimilarIssue, args)
+  );
+  context.subscriptions.push(findSimilarIssue);
 
   // Register local debug run icon
   const runIconCmd = vscode.commands.registerCommand("fx-extension.selectAndDebug", (...args) =>

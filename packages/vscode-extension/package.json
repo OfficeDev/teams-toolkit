@@ -562,6 +562,10 @@
         {
           "command": "fx-extension.teamsAgentTroubleshootError",
           "when": "false"
+        },
+        {
+          "command": "fx-extension.findSimilarIssue",
+          "when": "false"
         }
       ]
     },
@@ -933,6 +937,11 @@
         "command": "fx-extension.teamsAgentTroubleshootError",
         "title": "%teamstoolkit.commmands.teamsAgentResolve.title%",
         "enablement": "fx-extension.isChatParticipantUIEntriesEnabled",
+        "category": "Teams"
+      },
+      {
+        "command": "fx-extension.findSimilarIssue",
+        "title": "%teamstoolkit.handlers.similarIssues%",
         "category": "Teams"
       }
     ],

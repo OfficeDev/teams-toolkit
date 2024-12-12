@@ -4,7 +4,6 @@
     "engines": {
         "node": "18 || 20"
     },
-    "type": "module",
     "private": true,
     "main": "./lib/app.js",
     "dependencies": {
@@ -26,8 +25,10 @@
     "scripts": {
         "dev:teamsfx": "env-cmd --silent -f .localConfigs npm run start",
         "start": "nodemon",
-        "prestart": "npm run build",
-        "build": "tsc --build && vite build && shx cp -r ./src/views ./src/static ./lib/",
+        "prestart": "npm run build:frontend",
+        "build": "npm run build:frontend && npm run build:backend",
+        "build:frontend": "vite build",
+        "build:backend": "tsc --build && shx cp -r ./src/views ./src/static ./lib/",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "homepage": "."

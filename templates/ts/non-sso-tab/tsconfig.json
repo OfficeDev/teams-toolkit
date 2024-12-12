@@ -1,15 +1,14 @@
 {
   "compilerOptions": {
     "declaration": true,
-    "target": "esnext",
-    "module": "esnext",
-    "moduleResolution": "node",
+    "target": "es2017",
+    "module": "commonjs",
     "outDir": "./lib",
     "rootDir": "./src",
-    "sourceMap": true,
     "incremental": true,
     "tsBuildInfoFile": "./lib/.tsbuildinfo",
     "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
   },
   "include": ["src/**/*"],

@@ -3,19 +3,18 @@ import fs from "fs";
 import https from "https";
 import path from "path";
 import send from "send";
-import { fileURLToPath } from "url";
 
 const app = express();
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const sslOptions = {
   key: process.env.SSL_KEY_FILE ? fs.readFileSync(process.env.SSL_KEY_FILE) : undefined,
   cert: process.env.SSL_CRT_FILE ? fs.readFileSync(process.env.SSL_CRT_FILE) : undefined,
 };
 
-app.use("/static", express.static(path.join(__dirname, "../lib/static")));
+app.use("/static/scripts", express.static(path.join(__dirname, "../lib/static/scripts")));
+app.use("/static", express.static(path.join(__dirname, "./static")));
+app.use("/", express.static(path.join(__dirname, "./static")));
+app.use("/tab", express.static(path.join(__dirname, "./static")));
 
 // Adding tabs to our app. This will setup routes to various views
 // Setup home page

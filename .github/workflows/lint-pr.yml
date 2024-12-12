@@ -203,8 +203,8 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }} # Use a PAT with the required permissions
           script: |
             const currentTarget = context.payload.pull_request.base.ref;
-            const latestVSCRelease = '${{ steps.get-latest-release.outputs.latest_vsc_release }}';
-            const latestVSRelease = '${{ steps.get-latest-release.outputs.latest_vs_release }}';
+            const latestVSCRelease = '${{ steps.get-latest-release.outputs.latest_vsc_release }}'.trim();
+            const latestVSRelease = '${{ steps.get-latest-release.outputs.latest_vs_release }}'.trim();
             const prNumber = context.payload.pull_request.number;
             const prTitle = context.payload.pull_request.title;
             const prAuthor = context.payload.pull_request.user.login;

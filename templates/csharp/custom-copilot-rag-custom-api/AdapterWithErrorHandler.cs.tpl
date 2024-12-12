@@ -1,13 +1,14 @@
-﻿using Microsoft.Bot.Builder.TraceExtensions;
+﻿using Microsoft.Bot.Builder.Integration.AspNet.Core;
+using Microsoft.Bot.Builder.TraceExtensions;
+using Microsoft.Bot.Connector.Authentication;
 using Microsoft.Bot.Schema;
-using Microsoft.Teams.AI;
 
 namespace {{SafeProjectName}}
 {
-    public class AdapterWithErrorHandler : TeamsAdapter
+    public class AdapterWithErrorHandler : CloudAdapter
     {
-        public AdapterWithErrorHandler(IConfiguration auth, ILogger<TeamsAdapter> logger)
-            : base(auth, null, logger)
+        public AdapterWithErrorHandler(BotFrameworkAuthentication auth, ILogger<CloudAdapter> logger)
+            : base(auth, logger)
         {
             OnTurnError = async (turnContext, exception) =>
             {

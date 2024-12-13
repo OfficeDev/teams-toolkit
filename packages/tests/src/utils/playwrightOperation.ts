@@ -206,7 +206,7 @@ export async function initPage(
     }
 
     await addBtn?.click();
-    await page.waitForTimeout(Timeout.shortTimeLoading);
+    await page.waitForTimeout(Timeout.longTimeWait);
     // verify add page is closed
     try {
       await page?.waitForSelector(
@@ -325,7 +325,7 @@ export async function reopenPage(
       }
 
       await addBtn?.click();
-      await page.waitForTimeout(Timeout.shortTimeLoading);
+      await page.waitForTimeout(Timeout.longTimeWait);
       console.log("[success] app loaded");
       // verify add page is closed
       try {
@@ -456,6 +456,8 @@ export async function initTeamsPage(
         }
       }
       await addBtn?.click();
+
+      await page.waitForTimeout(Timeout.longTimeWait);
 
       if (options?.type === "meeting") {
         // select meeting tab in dialog box

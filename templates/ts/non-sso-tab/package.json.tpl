@@ -20,7 +20,8 @@
         "ts-node": "^10.9.1",
         "typescript": "^4.1.2",
         "shx": "^0.3.4",
-        "vite": "^6.0.2"
+        "vite": "^6.0.2",
+        "vite-plugin-commonjs": "^0.10.4"
     },
     "scripts": {
         "dev:teamsfx": "env-cmd --silent -f .localConfigs npm run start",

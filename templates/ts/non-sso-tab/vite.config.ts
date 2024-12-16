@@ -1,7 +1,9 @@
 import { defineConfig } from "vite";
 import { resolve } from "path";
+import commonjs from "vite-plugin-commonjs";
 
 export default defineConfig({
+  plugins: [commonjs()],
   define: {
     global: "globalThis",
   },

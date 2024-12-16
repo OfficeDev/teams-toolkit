@@ -6,6 +6,7 @@ import * as chai from "chai";
 import { AadManifestHelper } from "../../../../src/component/driver/aad/utility/aadManifestHelper";
 import { AadManifestErrorMessage } from "../../../../src/component/driver/aad/error/aadManifestError";
 import { AADManifest } from "../../../../src/component/driver/aad/interface/AADManifest";
+import { AADApplication } from "../../../../src/component/driver/aad/interface/AADApplication";
 
 describe("Microsoft Entra manifest helper Test", () => {
   it("manifestToApplication", async () => {
@@ -39,6 +40,16 @@ describe("Microsoft Entra manifest helper Test", () => {
   });
 
   it("validateManifest with invalid manifest", async () => {
+    const warning = AadManifestHelper.validateManifest(invalidAadManifest);
+    chai.expect(warning).contain(AadManifestErrorMessage.NameIsMissing);
+    chai.expect(warning).contain(AadManifestErrorMessage.SignInAudienceIsMissing);
+    chai.expect(warning).contain(AadManifestErrorMessage.PreAuthorizedApplicationsIsMissing);
+    chai.expect(warning).contain(AadManifestErrorMessage.Oauth2PermissionsIsMissing);
+    chai.expect(warning).contain(AadManifestErrorMessage.AccessTokenAcceptedVersionIs1);
+    chai.expect(warning).contain(AadManifestErrorMessage.OptionalClaimsMissingIdtypClaim.trimEnd());
+  });
+
+  it("validasteManifest invalid manifest with new schema", async () => {
     const warning = AadManifestHelper.validateManifest(invalidAadManifest);
     chai.expect(warning).contain(AadManifestErrorMessage.NameIsMissing);
     chai.expect(warning).contain(AadManifestErrorMessage.SignInAudienceIsMissing);
@@ -331,6 +342,49 @@ const invalidAadManifest: AADManifest = {
   oauth2AllowIdTokenImplicitFlow: false,
   oauth2AllowImplicitFlow: false,
   tags: [],
+};
+
+const invalidAadManifestWithNewSChema: AADApplication = {
+  id: "",
+  appId: "",
+  displayName: "",
+  api: {
+    requestedAccessTokenVersion: 1,
+    knownClientApplications: [],
+    oauth2PermissionScopes: [],
+    preAuthorizedApplications: [],
+  },
+  signInAudience: "",
+  optionalClaims: {
+    idToken: [],
+    accessToken: [],
+    saml2Token: [],
+  },
+  requiredResourceAccess: [],
+  identifierUris: [],
+  web: {
+    redirectUris: [],
+    implicitGrantSettings: {
+      enableAccessTokenIssuance: false,
+      enableIdTokenIssuance: false,
+    },
+  },
+  addIns: [],
+  appRoles: [],
+  info: {
+    marketingUrl: "",
+    privacyStatementUrl: "",
+    supportUrl: "",
+    termsOfServiceUrl: "",
+  },
+  keyCredentials: [],
+  tags: [],
+  publicClient: {
+    redirectUris: [],
+  },
+  spa: {
+    redirectUris: [],
+  },
 };
 
 const fakeAadApp = {

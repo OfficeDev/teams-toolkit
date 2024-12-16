@@ -106,6 +106,8 @@ export enum QuestionNames {
   ImportPlugin = "import-plugin",
   PluginManifestFilePath = "plugin-manifest-path",
   PluginOpenApiSpecFilePath = "plugin-opeanapi-spec-path",
+
+  TemplateName = "template-name",
 }
 
 export enum ProjectTypeGroup {
@@ -925,9 +927,9 @@ export const NotificationTriggers = {
   TIMER: "timer",
 } as const;
 
-type NotificationTrigger = typeof NotificationTriggers[keyof typeof NotificationTriggers];
+export type NotificationTrigger = typeof NotificationTriggers[keyof typeof NotificationTriggers];
 
-interface HostTypeTriggerOptionItem extends OptionItem {
+export interface HostTypeTriggerOptionItem extends OptionItem {
   hostType: HostType;
   triggers?: NotificationTrigger[];
 }

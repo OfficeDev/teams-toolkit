@@ -292,7 +292,7 @@ export function meArchitectureQuestion(): SingleSelectQuestion {
   };
 }
 
-function botTriggerQuestion(): SingleSelectQuestion {
+export function botTriggerQuestion(): SingleSelectQuestion {
   return {
     name: QuestionNames.BotTrigger,
     title: getLocalizedString("plugins.bot.questionHostTypeTrigger.title"),

@@ -20,7 +20,6 @@ import { createContext } from "../../common/globalVars";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { isValidHttpUrl } from "../../common/stringUtils";
 import { listOperations } from "../../component/generator/apiSpec/helper";
-import { specGenerator } from "../../component/generator/copilotExtension/generator";
 import { Constants } from "../../component/generator/spfx/utils/constants";
 import { assembleError, EmptyOptionError, FileNotFoundError } from "../../error/common";
 import {
@@ -138,157 +137,21 @@ export function scaffoldQuestionForVSCode(): IQTreeNode {
                           default: ApiAuthOptions.none().id,
                         },
                       },
-                      specGenerator.getQuestionTreeNode(),
-                      // {
-                      //   condition: { equals: ApiPluginStartOptions.apiSpec().id },
-                      //   // data: specGenerator.getQuestions(),
-                      //   data: { type: "group", name: QuestionNames.FromExistingApi },
-                      //   children: [
-                      //     {
-                      //       data: apiSpecLocationQuestion(),
-                      //     },
-                      //     {
-                      //       data: apiOperationQuestion(),
-                      //       condition: (inputs: Inputs) => {
-                      //         return !inputs[QuestionNames.ApiPluginManifestPath];
-                      //       },
-                      //     },
-                      //   ],
-                      // },
-                      // {
-                      //   condition: { equals: ApiPluginStartOptions.existingPlugin().id },
-                      //   data: { type: "group", name: QuestionNames.ImportPlugin },
-                      //   children: [
-                      //     {
-                      //       data: {
-                      //         type: "singleFile",
-                      //         name: QuestionNames.PluginManifestFilePath,
-                      //         title: getLocalizedString(
-                      //           "core.createProjectQuestion.addExistingPlugin.pluginManifest.title"
-                      //         ),
-                      //         placeholder: getLocalizedString(
-                      //           "core.createProjectQuestion.addExistingPlugin.pluginManifest.placeholder"
-                      //         ),
-                      //         filters: {
-                      //           files: ["json"],
-                      //         },
-                      //         defaultFolder: os.homedir(),
-                      //         validation: {
-                      //           validFunc: async (input: string) => {
-                      //             const manifestRes =
-                      //               await pluginManifestUtils.readPluginManifestFile(input.trim());
-                      //             if (manifestRes.isErr()) {
-                      //               sendTelemetryErrorEvent(
-                      //                 CoreSource,
-                      //                 getQuestionValidationErrorEventName(
-                      //                   QuestionNames.PluginManifestFilePath
-                      //                 ),
-                      //                 manifestRes.error,
-                      //                 {
-                      //                   "correlation-id": Correlator.getId(),
-                      //                 }
-                      //               );
-                      //               return (manifestRes.error as UserError).displayMessage;
-                      //             } else {
-                      //               const manifest = manifestRes.value;
-                      //               const checkRes = validateSourcePluginManifest(
-                      //                 manifest,
-                      //                 QuestionNames.PluginManifestFilePath
-                      //               );
-                      //               if (checkRes.isErr()) {
-                      //                 sendTelemetryErrorEvent(
-                      //                   CoreSource,
-                      //                   getQuestionValidationErrorEventName(
-                      //                     QuestionNames.PluginManifestFilePath
-                      //                   ),
-                      //                   checkRes.error,
-                      //                   {
-                      //                     "correlation-id": Correlator.getId(),
-                      //                   }
-                      //                 );
-                      //                 return checkRes.error.displayMessage;
-                      //               }
-                      //             }
-                      //           },
-                      //         },
-                      //       },
-                      //     },
-                      //     {
-                      //       data: {
-                      //         type: "singleFile",
-                      //         name: QuestionNames.PluginOpenApiSpecFilePath,
-                      //         title: getLocalizedString(
-                      //           "core.createProjectQuestion.addExistingPlugin.apiSpec.title"
-                      //         ),
-                      //         placeholder: getLocalizedString(
-                      //           "core.createProjectQuestion.addExistingPlugin.openApiSpec.placeholder"
-                      //         ),
-                      //         filters: {
-                      //           files: ["json", "yml", "yaml"],
-                      //         },
-                      //         defaultFolder: (inputs: Inputs) =>
-                      //           path.dirname(
-                      //             inputs[QuestionNames.PluginManifestFilePath] as string
-                      //           ),
-                      //         validation: {
-                      //           validFunc: async (input: string, inputs?: Inputs) => {
-                      //             if (!inputs) {
-                      //               throw new Error("inputs is undefined"); // should never happen
-                      //             }
-                      //             const filePath = input.trim();
-                      //             const ext = path.extname(filePath).toLowerCase();
-                      //             if (![".json", ".yml", ".yaml"].includes(ext)) {
-                      //               const error = new FileNotSupportError(
-                      //                 CoreSource,
-                      //                 ["json", "yml", "yaml"].join(", ")
-                      //               );
-                      //               sendTelemetryErrorEvent(
-                      //                 CoreSource,
-                      //                 getQuestionValidationErrorEventName(
-                      //                   QuestionNames.PluginOpenApiSpecFilePath
-                      //                 ),
-                      //                 error,
-                      //                 {
-                      //                   "correlation-id": Correlator.getId(),
-                      //                 }
-                      //               );
-                      //               return error.displayMessage;
-                      //             }
-                      //             const specParser = new SpecParser(
-                      //               filePath,
-                      //               getParserOptions(ProjectType.Copilot)
-                      //             );
-                      //             const validationRes = await specParser.validate();
-                      //             const invalidSpecError = validationRes.errors.find(
-                      //               (o) => o.type === ErrorType.SpecNotValid
-                      //             );
-                      //             if (invalidSpecError) {
-                      //               const error = new UserError(
-                      //                 SpecParserSource,
-                      //                 ApiSpecTelemetryPropertis.InvalidApiSpec,
-                      //                 invalidSpecError.content,
-                      //                 invalidSpecError.content
-                      //               );
-                      //               sendTelemetryErrorEvent(
-                      //                 CoreSource,
-                      //                 getQuestionValidationErrorEventName(
-                      //                   QuestionNames.PluginOpenApiSpecFilePath
-                      //                 ),
-                      //                 error,
-                      //                 {
-                      //                   "correlation-id": Correlator.getId(),
-                      //                   [ApiSpecTelemetryPropertis.SpecNotValidDetails]:
-                      //                     invalidSpecError.content,
-                      //                 }
-                      //               );
-                      //             }
-                      //             return invalidSpecError?.content;
-                      //           },
-                      //         },
-                      //       },
-                      //     },
-                      //   ],
-                      // },
+                      {
+                        condition: { equals: ApiPluginStartOptions.apiSpec().id },
+                        data: { type: "group", name: QuestionNames.FromExistingApi },
+                        children: [
+                          {
+                            data: apiSpecLocationQuestion(),
+                          },
+                          {
+                            data: apiOperationQuestion(),
+                            condition: (inputs: Inputs) => {
+                              return !inputs[QuestionNames.ApiPluginManifestPath];
+                            },
+                          },
+                        ],
+                      },
                     ],
                   },
                 ],

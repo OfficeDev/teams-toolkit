@@ -394,6 +394,29 @@ describe("aadAppUpdate", async () => {
     expect(requestCount).to.equal(2); // should call MS Graph API twice
   });
 
+  it("should only call MS Graph API once if manifest does not have preAuthorizedApplications for new schema", async () => {
+    sinon
+      .stub(AadAppClient.prototype, "updateAadApp")
+      .onCall(0)
+      .resolves()
+      .onCall(1)
+      .rejects("updateAadApp should not be called twice");
+
+    envRestore = mockedEnv({
+      AAD_APP_OBJECT_ID: expectedObjectId,
+      AAD_APP_CLIENT_ID: expectedClientId,
+    });
+
+    const args = {
+      manifestPath: path.join(testAssetsRoot, "manifestWithoutPreAuthorizedAppNewSchema.json"),
+      outputFilePath: path.join(outputRoot, "manifest.output.json"),
+    };
+
+    const result = await updateAadAppDriver.execute(args, mockedDriverContext);
+
+    expect(result.result.isOk()).to.be.true;
+  });
+
   it("should not generate new permission id if the value already exists", async () => {
     sinon.stub(AadAppClient.prototype, "updateAadApp").resolves();
     envRestore = mockedEnv({

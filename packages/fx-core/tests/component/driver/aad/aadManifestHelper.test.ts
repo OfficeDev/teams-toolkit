@@ -14,6 +14,11 @@ describe("Microsoft Entra manifest helper Test", () => {
     chai.expect(aadApp).to.deep.equal(fakeAadApp);
   });
 
+  it("manifestToApplication should return original manifest if it already using new schema", async () => {
+    const aadApp = AadManifestHelper.manifestToApplication(fakeAadApp);
+    chai.expect(aadApp).to.deep.equal(fakeAadApp);
+  });
+
   it("manifestToApplication with no reply url", () => {
     const manifest = JSON.parse(JSON.stringify(fakeAadManifest));
     delete manifest.replyUrlsWithType;
@@ -50,7 +55,7 @@ describe("Microsoft Entra manifest helper Test", () => {
   });
 
   it("validasteManifest invalid manifest with new schema", async () => {
-    const warning = AadManifestHelper.validateManifest(invalidAadManifest);
+    const warning = AadManifestHelper.validateManifest(invalidAadManifestWithNewSChema);
     chai.expect(warning).contain(AadManifestErrorMessage.NameIsMissing);
     chai.expect(warning).contain(AadManifestErrorMessage.SignInAudienceIsMissing);
     chai.expect(warning).contain(AadManifestErrorMessage.PreAuthorizedApplicationsIsMissing);

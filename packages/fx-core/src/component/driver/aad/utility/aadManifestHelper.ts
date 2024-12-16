@@ -307,6 +307,6 @@ export class AadManifestHelper {
   }
 
   public static isNewAADManifestSchema(manifest: AADManifest | AADApplication): boolean {
-    return !!(manifest as AADApplication).displayName;
+    return "displayName" in manifest;
   }
 }

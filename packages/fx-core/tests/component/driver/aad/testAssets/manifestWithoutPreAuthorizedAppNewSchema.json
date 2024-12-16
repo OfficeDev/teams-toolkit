@@ -4,21 +4,6 @@
     "displayName": "test",
     "identifierUris": [],
     "signInAudience": "AzureADMyOrg",
-    "api": {
-        "requestedAccessTokenVersion": 2,
-        "oauth2PermissionScopes": [
-            {
-                "adminConsentDescription": "Allows Teams to call the app's web APIs as the current user.",
-                "adminConsentDisplayName": "Teams can access app's web APIs",
-                "id": "${{AAD_APP_ACCESS_AS_USER_PERMISSION_ID}}",
-                "isEnabled": true,
-                "type": "User",
-                "userConsentDescription": "Enable Teams to call this app's web APIs with the same rights that you have",
-                "userConsentDisplayName": "Teams can access app's web APIs and make requests on your behalf",
-                "value": "access_as_user"
-            }
-        ]
-    },
     "optionalClaims": {
         "idToken": [],
         "accessToken": [

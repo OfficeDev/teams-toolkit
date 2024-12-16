@@ -54,10 +54,16 @@ describe("Microsoft Entra manifest helper Test", () => {
     chai.expect(warning).contain(AadManifestErrorMessage.OptionalClaimsMissingIdtypClaim.trimEnd());
   });
 
+  it("validateManifest with no warning with new schema", async () => {
+    const warning = AadManifestHelper.validateManifest(fakeAadApp);
+    chai.expect(warning).to.be.empty;
+  });
+
   it("validasteManifest invalid manifest with new schema", async () => {
-    const warning = AadManifestHelper.validateManifest(invalidAadManifestWithNewSChema);
+    const warning = AadManifestHelper.validateManifest(invalidAadManifestWithNewSChema as any);
     chai.expect(warning).contain(AadManifestErrorMessage.NameIsMissing);
     chai.expect(warning).contain(AadManifestErrorMessage.SignInAudienceIsMissing);
+    chai.expect(warning).contain(AadManifestErrorMessage.RequiredResourceAccessIsMissing);
     chai.expect(warning).contain(AadManifestErrorMessage.PreAuthorizedApplicationsIsMissing);
     chai.expect(warning).contain(AadManifestErrorMessage.Oauth2PermissionsIsMissing);
     chai.expect(warning).contain(AadManifestErrorMessage.AccessTokenAcceptedVersionIs1);
@@ -349,7 +355,7 @@ const invalidAadManifest: AADManifest = {
   tags: [],
 };
 
-const invalidAadManifestWithNewSChema: AADApplication = {
+const invalidAadManifestWithNewSChema = {
   id: "",
   appId: "",
   displayName: "",
@@ -365,7 +371,6 @@ const invalidAadManifestWithNewSChema: AADApplication = {
     accessToken: [],
     saml2Token: [],
   },
-  requiredResourceAccess: [],
   identifierUris: [],
   web: {
     redirectUris: [],

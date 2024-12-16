@@ -41,6 +41,8 @@ The following files can be customized and demonstrate an example implementation 
 | `src/static/styles/custom.css`   | css file for the app.                                                                                           |
 | `src/static/views/hello.html`    | html file for the app.                                                                                          |
 | `src/app.ts`                     | Starting an `express` server.                                                                                   |
+| `vite.config.ts`                 | Configuration for Vite build tool.                                                                              |  
+| `nodemon.json`                   | Configuration for Nodemon to watch and restart the server.                                                      |
 
 The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.
 

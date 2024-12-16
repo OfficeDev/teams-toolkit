@@ -49,7 +49,7 @@ export enum TemplateProject {
   Dashboard = "Team Central Dashboard",
   AssistDashboard = "Developer Assist Dashboard",
   DiceRoller = "Dice Roller in meeting",
-  OutlookTab = "Hello World Teams Tab Outlook add-in",
+  OutlookTab = "Hello World Teams Tab and Office add-in",
   OutlookSignature = "Set signature using Outlook add-in",
   ChefBot = "Teams Chef Bot",
   GraphConnectorBot = "Graph Connector Bot",
@@ -86,7 +86,7 @@ export enum TemplateProjectFolder {
   // v3 only
   Dashboard = "team-central-dashboard",
   OutlookSignature = "outlook-set-signature",
-  OutlookTab = "hello-world-teams-tab-and-outlook-add-in",
+  OutlookTab = "hello-world-teams-tab-and-office-add-in",
   AssistDashboard = "developer-assist-dashboard",
   DiceRoller = "live-share-dice-roller",
   ChefBot = "a.teamsChefBot",
@@ -244,10 +244,10 @@ export class Timeout {
    */
   public static readonly chromiumLaunchTimeout: number = 1 * 60 * 1000;
   public static readonly playwrightDefaultTimeout: number = 2 * 60 * 1000;
-  public static readonly playwrightConsentPageReload: number = 500;
+  public static readonly playwrightConsentPageReload: number = 3000;
   public static readonly playwrightBotConsentContinueButton: number =
     2 * 60 * 1000;
-  public static readonly playwrightConsentPopupPage: number = 10 * 1000;
+  public static readonly playwrightConsentPopupPage: number = 30 * 1000;
   public static readonly playwrightAddAppButton: number = 180 * 1000;
 
   // mocha

@@ -117,6 +117,7 @@ import { ConstantString } from "../../src/common/constants";
 import { SyncManifestArgs } from "../../src/component/driver/teamsApp/interfaces/SyncManifest";
 import { WrapDriverContext } from "../../src/component/driver/util/wrapUtil";
 import * as copilotExtensionHelper from "../../src/component/generator/copilotExtension//helper";
+import { AadManifestHelper } from "../../src/component/driver/aad/utility/aadManifestHelper";
 
 const tools = new MockTools();
 
@@ -600,6 +601,82 @@ describe("Core basic APIs", () => {
       assert.isTrue(result.isOk());
     } finally {
       envUtil.readEnv = originFunc;
+      restore();
+    }
+  });
+
+  it("convertAadToNewSchema method should work fine", async () => {
+    const restore = mockedEnv({
+      TEAMSFX_DEBUG_TEMPLATE: "true", // workaround test failure that when local template not released to GitHub
+      NODE_ENV: "development", // workaround test failure that when local template not released to GitHub
+    });
+
+    try {
+      const core = new FxCore(tools);
+      const appName = await mockV3Project();
+      const projectPath = path.join(os.tmpdir(), appName);
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: projectPath,
+        [QuestionNames.AadAppManifestFilePath]: `${projectPath}/aad.manifest.json`,
+      };
+
+      sandbox.stub(tools.ui, "showMessage").resolves(ok("Continue"));
+      const result = await core.convertAadToNewSchema(inputs);
+      assert.isTrue(result.isOk());
+    } finally {
+      restore();
+    }
+  });
+
+  it("convertAadToNewSchema should throw file not exist error if aad.manifest.json does not exist", async () => {
+    const restore = mockedEnv({
+      TEAMSFX_DEBUG_TEMPLATE: "true", // workaround test failure that when local template not released to GitHub
+      NODE_ENV: "development", // workaround test failure that when local template not released to GitHub
+    });
+
+    try {
+      const core = new FxCore(tools);
+      const appName = await mockV3Project();
+      const projectPath = path.join(os.tmpdir(), appName);
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: projectPath,
+        [QuestionNames.AadAppManifestFilePath]: `/not-exist-path/aad.manifest.json`,
+      };
+
+      const result = await core.convertAadToNewSchema(inputs);
+      assert.isTrue(result.isErr());
+      if (result.isErr()) {
+        assert.isTrue(result.error instanceof FileNotFoundError);
+      }
+    } finally {
+      restore();
+    }
+  });
+
+  it("convertAadToNewSchema throw user cancel error if not confirmed", async () => {
+    const restore = mockedEnv({
+      TEAMSFX_DEBUG_TEMPLATE: "true", // workaround test failure that when local template not released to GitHub
+      NODE_ENV: "development", // workaround test failure that when local template not released to GitHub
+    });
+
+    try {
+      const core = new FxCore(tools);
+      const appName = await mockV3Project();
+      const projectPath = path.join(os.tmpdir(), appName);
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: projectPath,
+        [QuestionNames.AadAppManifestFilePath]: `${projectPath}/aad.manifest.json`,
+      };
+
+      const result = await core.convertAadToNewSchema(inputs);
+      assert.isTrue(result.isErr());
+      if (result.isErr()) {
+        assert.isTrue(result.error instanceof UserCancelError);
+      }
+    } finally {
       restore();
     }
   });

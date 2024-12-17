@@ -13,8 +13,6 @@ const sslOptions = {
 
 app.use("/static/scripts", express.static(path.join(__dirname, "../lib/static/scripts")));
 app.use("/static", express.static(path.join(__dirname, "./static")));
-app.use("/", express.static(path.join(__dirname, "./static")));
-app.use("/tab", express.static(path.join(__dirname, "./static")));
 
 // Adding tabs to our app. This will setup routes to various views
 // Setup home page

@@ -1,4 +1,3 @@
-import { featureFlagManager } from "@microsoft/teamsfx-core";
 import * as chai from "chai";
 import sinon, { SinonFakeTimers, useFakeTimers } from "sinon";
 import {
@@ -10,11 +9,9 @@ import {
   isM365CopilotChatDebugConfiguration,
   isOfficeChatUrl,
 } from "../../src/pluginDebugger/cdpClient";
-import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 import { WebSocketEventHandler } from "../../src/pluginDebugger/webSocketEventHandler";
 import * as ui from "../../src/qm/vsc_ui";
-import { MockTools } from "../mocks/mockTools";
-import { utimes } from "fs";
+import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 
 describe("cdpClient", () => {
   const sandbox = sinon.createSandbox();

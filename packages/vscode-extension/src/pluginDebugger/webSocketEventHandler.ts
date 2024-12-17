@@ -5,6 +5,7 @@ import { Protocol } from "devtools-protocol";
 import * as vscode from "vscode";
 import { ANSIColors } from "../debug/common/debugConstants";
 import { CopilotDebugLog } from "./copilotDebugLogOutput";
+import { VS_CODE_UI } from "../qm/vsc_ui";
 interface BotTextMessage {
   messageType: string | undefined;
   text: string;
@@ -29,12 +30,14 @@ export class WebSocketEventHandler {
             this.convertBotMessageToChannelOutput(botTextMessage);
             num++;
           }
-        } else {
-          console.warn("Parsed response object does not contain item or messages:", parsedObject);
         }
       }
     } catch (error) {
-      void vscode.window.showErrorMessage(`Error parsing response, ${(error as Error).message}`);
+      void VS_CODE_UI.showMessage(
+        "error",
+        `Error parsing response, ${(error as Error).message}`,
+        false
+      );
       vscode.debug.activeDebugConsole.appendLine(
         `${ANSIColors.RED} (×) Error: ${ANSIColors.WHITE} Error parsing response: ${
           (error as Error).message

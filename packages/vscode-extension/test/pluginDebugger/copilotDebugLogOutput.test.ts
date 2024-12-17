@@ -1,13 +1,10 @@
+import { LogLevel } from "@microsoft/teamsfx-api";
 import * as chai from "chai";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
 import { ANSIColors } from "../../src/debug/common/debugConstants";
-import { LogLevel } from "@microsoft/teamsfx-api";
-import {
-  CopilotDebugLog,
-  logToDebugConsole,
-  writeCopilotLogToFile,
-} from "../../src/pluginDebugger/copilotDebugLogOutput";
+import * as globalVariables from "../../src/globalVariables";
+import { CopilotDebugLog, logToDebugConsole } from "../../src/pluginDebugger/copilotDebugLogOutput";
 
 describe("copilotDebugLogOutput", () => {
   const sandbox = sinon.createSandbox();
@@ -207,12 +204,15 @@ describe("copilotDebugLogOutput", () => {
           },
         ],
       });
+      const logFilePath = `/path/to/log/Copilot log ${"test".replace(/-|:|\.\d+Z$/g, "")}.txt`;
+      sandbox.stub(globalVariables, "defaultExtensionLogPath").value("/path/to/log");
+      sandbox.stub(Date.prototype, "toISOString").returns("test");
       const copilotDebugLog = new CopilotDebugLog(logJson);
       const appendLineStub = sandbox.stub(vscode.debug.activeDebugConsole, "appendLine");
       copilotDebugLog.write();
       chai.assert.isTrue(
         appendLineStub.calledWith(
-          `${ANSIColors.GREEN}         (√) ${ANSIColors.WHITE}Function execution details: ${ANSIColors.GREEN}Status 200`
+          `${ANSIColors.GREEN}         (√) ${ANSIColors.WHITE}Function execution details: ${ANSIColors.GREEN}Status 200, ${ANSIColors.WHITE}refer to ${ANSIColors.BLUE}${logFilePath}${ANSIColors.WHITE} for all details.`
         )
       );
       chai.assert.isTrue(

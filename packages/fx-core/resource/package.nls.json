@@ -490,7 +490,7 @@
   "core.aadAppQuestion.label": "Microsoft Entra app",
   "core.aadAppQuestion.description": "Your Microsoft Entra app for Single Sign On",
   "core.convertAadToNewSchema.continue": "Continue",
-  "core.convertAadToNewSchema.warning": "Converting MIcrosoft Entra app manifest file to new schema will replace the original file. Do you still want to continue?",
+  "core.convertAadToNewSchema.warning": "Converting Microsoft Entra app manifest file to new schema will replace the original file. Do you still want to continue?",
   "core.convertAadToNewSchema.success": "Microsoft Entra app manifest file successfully converted to new schema.",
   "core.teamsAppQuestion.label": "Teams app",
   "core.teamsAppQuestion.description": "Your Teams app",

@@ -2,7 +2,7 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
 import { CopilotDebugLog } from "../../src/pluginDebugger/copilotDebugLogOutput";
-import { WebSocketEventHandler } from "../../src/pluginDebugger/WebSocketEventHandler";
+import { WebSocketEventHandler } from "../../src/pluginDebugger/webSocketEventHandler";
 import * as ui from "../../src/qm/vsc_ui";
 
 describe("WebSocketEventHandler", () => {

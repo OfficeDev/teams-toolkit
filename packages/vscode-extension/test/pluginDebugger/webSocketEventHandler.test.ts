@@ -1,9 +1,9 @@
 import * as chai from "chai";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
+import { CopilotDebugLog } from "../../src/pluginDebugger/copilotDebugLogOutput";
 import { WebSocketEventHandler } from "../../src/pluginDebugger/WebSocketEventHandler";
 import * as ui from "../../src/qm/vsc_ui";
-import { CopilotDebugLog } from "../../src/pluginDebugger/copilotDebugLogOutput";
 
 describe("WebSocketEventHandler", () => {
   const sandbox = sinon.createSandbox();

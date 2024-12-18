@@ -1143,10 +1143,15 @@ async function updateAdaptiveCardForCustomApi(
         if (jsonPath !== "$" && card.body && card.body[0] && (card.body[0] as any).$data) {
           (card.body[0] as any).$data = `\${${jsonPath}}`;
         }
+        const requestData = {
+          body: jsonData,
+          uri: item.pathUrl,
+          method: item.method,
+        };
         const cardFilePath = path.join(adaptiveCardsFolderPath, `${name}.json`);
         const jsonDataPath = path.join(adaptiveCardsFolderPath, `${name}.data.json`);
         await fs.writeFile(cardFilePath, JSON.stringify(card, null, 2));
-        await fs.writeFile(jsonDataPath, JSON.stringify(jsonData, null, 2));
+        await fs.writeFile(jsonDataPath, JSON.stringify(requestData, null, 2));
 
         generateWarnings.forEach((w) => {
           warnings.push({
@@ -1491,7 +1496,30 @@ async function updateCodeForCustomApi(
     await fs.writeFile(projectFilePath, updateProjectFileContent);
   }
 }
+export async function updateForDemoCopilot(
+  spec: OpenAPIV3.Document,
+  language: string,
+  destinationPath: string,
+  openapiSpecFileName: string
+): Promise<WarningResult[]> {
+  const warnings: WarningResult[] = [];
+  let chatFolder = path.join(destinationPath, "src", "prompts", "chat");
+  if (language === ProgrammingLanguage.CSharp) {
+    chatFolder = path.join(destinationPath, "prompts", "Chat");
+  }
+  await fs.ensureDir(chatFolder);
+  const [specItems, needAuth] = parseSpec(spec);
 
+  // 2. update adaptive card folder
+  const generateWarnings = await updateAdaptiveCardForCustomApi(
+    specItems,
+    language,
+    destinationPath
+  );
+
+  warnings.push(...generateWarnings);
+  return warnings;
+}
 export async function updateForCustomApi(
   spec: OpenAPIV3.Document,
   language: string,

@@ -61,6 +61,7 @@ export interface IDevTunnelArgs extends IBaseTunnelArgs {
     access?: string;
     writeToEnvironmentFile?: DevTunnelOutput;
   }[];
+  hostHeader?: string;
   expiration?: number;
 }
 
@@ -307,6 +308,9 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
             },
           };
         }),
+        options: {
+          hostHeader: args.hostHeader,
+        },
         labels: [DevTunnelTag],
         customExpiration: args.expiration ?? 3600, // 1 hour
       };

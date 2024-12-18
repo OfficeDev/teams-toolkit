@@ -60,6 +60,7 @@ import {
   getParserOptions,
   listOperations,
   updateForCustomApi,
+  updateForDemoCopilot,
 } from "./helper";
 import { copilotGptManifestUtils } from "../../driver/teamsApp/utils/CopilotGptManifestUtils";
 import { declarativeCopilotInstructionFileName } from "../constant";
@@ -396,6 +397,28 @@ export class SpecGenerator extends DefaultTemplateGenerator {
         try {
           const language = inputs[QuestionNames.ProgrammingLanguage] as ProgrammingLanguage;
           const updateWarnings = await updateForCustomApi(
+            spec,
+            language,
+            destinationPath,
+            openapiSpecFileName
+          );
+          warnings.push(...updateWarnings);
+        } catch (error: any) {
+          throw new SystemError(
+            this.componentName,
+            failedToUpdateCustomApiTemplateErrorName,
+            error.message,
+            error.message
+          );
+        }
+      }
+      if (getTemplateInfosState.type === ProjectType.Copilot) {
+        const specs = await specParser.getFilteredSpecs(inputs[QuestionNames.ApiOperation]);
+        const spec = specs[1];
+        try {
+          // const language = inputs[QuestionNames.ProgrammingLanguage] as ProgrammingLanguage;
+          const language = ProgrammingLanguage.TS;
+          const updateWarnings = await updateForDemoCopilot(
             spec,
             language,
             destinationPath,

@@ -2273,7 +2273,7 @@ export class FxCore {
   @hooks([
     ErrorContextMW({ component: "FxCore", stage: Stage.createDeclarativeAgentBot }),
     ErrorHandlerMW,
-    EnvLoaderMW(true, true),
+    EnvLoaderMW(true, false),
     QuestionMW("declarativeAgentToBot"),
     ConcurrentLockerMW,
   ])
@@ -2308,7 +2308,7 @@ export class FxCore {
       );
     }
 
-    // User confirm
+    // Let user confirm in case of losing existing files.
     const confirmRes = await context.userInteraction.showMessage(
       "warn",
       getLocalizedString("core.createDeclarativeAgentBot.confirm", inputs.projectPath),
@@ -2324,12 +2324,14 @@ export class FxCore {
 
     // Create a context for creating declarative agent bot
     const declarativeAgentBotContext = await DeclarativeAgentBotContext.create(
+      inputs.platform,
       inputs.env,
       inputs.projectPath,
       declarativeAgentManifesRes.value,
-      inputs.tokenProvider,
       inputs[QuestionNames.MultiTenant]
     );
+
+    // Do the actual creation
     await create(declarativeAgentBotContext);
 
     const successMessage = getLocalizedString(

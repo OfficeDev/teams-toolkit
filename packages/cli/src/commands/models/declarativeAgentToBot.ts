@@ -5,11 +5,12 @@ import { DeclarativeAgentBotInputs, DeclarativeAgentBotOptions } from "@microsof
 import { getFxCore } from "../../activate";
 import { commands } from "../../resource";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
+import { ProjectFolderOption } from "../common";
 
 export const declarativeAgentToBotCommand: CLICommand = {
-  name: "DA2Bot",
+  name: "bot-create",
   description: commands["create.da-bot"].description,
-  options: DeclarativeAgentBotOptions,
+  options: [ProjectFolderOption, ...DeclarativeAgentBotOptions],
   telemetry: {
     event: TelemetryEvent.CreateDeclarativeAgentBot,
   },

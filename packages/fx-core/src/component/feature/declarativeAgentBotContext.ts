@@ -4,33 +4,35 @@
 import fs, { CopyOptions, WriteFileOptions } from "fs-extra";
 import path from "path";
 
-import { M365TokenProvider } from "@microsoft/teamsfx-api";
+import { envUtil } from "../utils/envUtil";
+import { pathUtils } from "../utils/pathUtils";
+import { Platform } from "@microsoft/teamsfx-api";
 
 export const backupFolder = ".backup";
 
 export class DeclarativeAgentBotContext {
   private modifiedPaths: string[] = [];
+  platform: Platform;
   env = "";
   projectPath = "";
   backupPath = "";
-  declarativeAgentManifestPath = "";
-  tokenProvider: M365TokenProvider | undefined = undefined;
-  declarativeAgentId?: string;
+  agentManifestPath = "";
+  agentId?: string;
   teamsBotId?: string;
   multiTenant = false;
 
   static async create(
+    platform: Platform,
     env: string,
     projectPath: string,
     declarativeAgentManifestPath: string,
-    tokenProvider: M365TokenProvider,
     multiTenant: boolean
   ): Promise<DeclarativeAgentBotContext> {
     const context = new DeclarativeAgentBotContext(
+      platform,
       env,
       projectPath,
       declarativeAgentManifestPath,
-      tokenProvider,
       multiTenant
     );
     await fs.ensureDir(context.backupPath);
@@ -38,16 +40,16 @@ export class DeclarativeAgentBotContext {
   }
 
   private constructor(
+    platform: Platform,
     env: string,
     projectPath: string,
     declarativeAgentManifestPath: string,
-    tokenProvider: M365TokenProvider,
     multiTenant: boolean
   ) {
+    this.platform = platform;
     this.env = env;
     this.projectPath = projectPath;
-    this.declarativeAgentManifestPath = declarativeAgentManifestPath;
-    this.tokenProvider = tokenProvider;
+    this.agentManifestPath = declarativeAgentManifestPath;
     this.backupPath = path.join(this.projectPath, backupFolder);
     this.multiTenant = multiTenant;
   }
@@ -83,9 +85,23 @@ export class DeclarativeAgentBotContext {
     return await fs.remove(path.join(this.projectPath, _path));
   }
 
-  async fsWriteFile(file: string, data: any, options?: WriteFileOptions | string): Promise<void> {
+  async fsWriteFile(
+    file: string,
+    data: unknown,
+    options?: WriteFileOptions | string
+  ): Promise<void> {
     await fs.writeFile(path.join(this.projectPath, file), data, options);
     this.addModifiedPath(file);
+  }
+
+  async writeEnv(key: string, value: string): Promise<void> {
+    const envFilePath = await pathUtils.getEnvFilePath(this.projectPath, this.env);
+    if (envFilePath.isErr()) throw envFilePath.error;
+    if (!envFilePath.value) throw new Error("Env file not found");
+
+    await this.backup(envFilePath.value);
+    await envUtil.writeEnv(this.projectPath, this.env, { [key]: value });
+    this.addModifiedPath(envFilePath.value);
   }
 
   async cleanBackup(): Promise<void> {

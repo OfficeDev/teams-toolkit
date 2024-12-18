@@ -4,15 +4,16 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 
-import { AppPackageFolderName } from "@microsoft/teamsfx-api";
+import { AppPackageFolderName, IBot, InputsWithProjectPath } from "@microsoft/teamsfx-api";
 
 import { copilotStudioClient } from "../../client/copilotStudioClient";
 import { CopilotStudioScopes } from "../../common/constants";
+import { TOOLS } from "../../common/globalVars";
+import { getUuid } from "../../common/stringUtils";
 import { MetadataV3 } from "../../common/versionMetadata";
 import { copilotGptManifestUtils } from "../driver/teamsApp/utils/CopilotGptManifestUtils";
 import { manifestUtils } from "../driver/teamsApp/utils/ManifestUtils";
 import { loadStateFromEnv } from "../driver/util/utils";
-import { envUtil } from "../utils/envUtil";
 import { DeclarativeAgentBotContext } from "./declarativeAgentBotContext";
 import { DeclarativeAgentBotDefinition } from "./declarativeAgentDefinition";
 
@@ -28,25 +29,20 @@ export async function create(context: DeclarativeAgentBotContext): Promise<void>
 
 async function wrapExecution(context: DeclarativeAgentBotContext): Promise<void> {
   try {
-    await process(context);
-  } catch (error: any) {
+    await updateLaunchJson(context);
+    await updateManifest(context);
+    await provisionBot(context);
+    await getBotId(context);
+  } catch (error: unknown) {
     await rollbackExecution(context);
     throw error;
   }
 }
 
-async function process(context: DeclarativeAgentBotContext): Promise<void> {
-  await updateLaunchJson(context);
-  await uppdateManifest(context);
-  await provisionBot(context);
-  await getBotId(context);
-  await updateEnv(context);
-}
-
 async function updateLaunchJson(context: DeclarativeAgentBotContext): Promise<void> {
   const launchJsonPath = path.join(context.projectPath, launchJsonFile);
   if (await fs.pathExists(launchJsonPath)) {
-    await context.backup(launchJsonPath);
+    await context.backup(launchJsonFile);
     let launchJsonContent = await fs.readFile(launchJsonPath, "utf8");
 
     const jsonObject = JSON.parse(launchJsonContent);
@@ -79,37 +75,36 @@ async function updateLaunchJson(context: DeclarativeAgentBotContext): Promise<vo
       },
     });
     launchJsonContent = JSON.stringify(jsonObject, null, 4);
-    await context.fsWriteFile(launchJsonPath, launchJsonContent, "utf8");
+    await context.fsWriteFile(launchJsonFile, launchJsonContent, "utf8");
   }
 }
 
-async function uppdateManifest(context: DeclarativeAgentBotContext): Promise<void> {
-  const manifestPath = path.join(AppPackageFolderName, MetadataV3.teamsManifestFileName);
+async function updateManifest(context: DeclarativeAgentBotContext): Promise<void> {
+  const manifestFile = path.join(AppPackageFolderName, MetadataV3.teamsManifestFileName);
+  const manifestPath = path.join(context.projectPath, manifestFile);
   if (await fs.pathExists(manifestPath)) {
-    await context.backup(manifestPath);
-    const manifestContent = await manifestUtils.readAppManifest(context.projectPath);
-    if (manifestContent.isErr()) {
-      return;
-    }
-    const manifest = manifestContent.value;
-    if (!manifest.bots) {
-      manifest.bots = [];
-    }
-    manifest.bots.push({
+    await context.backup(manifestFile);
+    const botCapability: IBot = {
       botId: "${{BOT_ID}}",
       scopes: ["personal", "team", "groupChat"],
       supportsFiles: false,
       isNotificationOnly: false,
-    });
-    await context.fsWriteFile(manifestPath, manifest);
+    };
+    const inputs: InputsWithProjectPath = {
+      platform: context.platform,
+      addManifestPath: manifestPath,
+      projectPath: context.projectPath,
+    };
+    await manifestUtils.addCapabilities(inputs, [{ name: "Bot", snippet: botCapability }]);
   }
 }
 
 async function provisionBot(context: DeclarativeAgentBotContext): Promise<void> {
-  const agentManifestPath = path.join(context.projectPath, context.declarativeAgentManifestPath);
-  const agentManifest = await copilotGptManifestUtils.readCopilotGptManifestFile(agentManifestPath);
+  const agentManifest = await copilotGptManifestUtils.readCopilotGptManifestFile(
+    context.agentManifestPath
+  );
   if (agentManifest.isErr()) {
-    return;
+    throw agentManifest.error;
   }
 
   const state = loadStateFromEnv(new Map(Object.entries(defaultOutputNames)));
@@ -117,10 +112,12 @@ async function provisionBot(context: DeclarativeAgentBotContext): Promise<void> 
     throw new Error("M365 app id or tenant id is not found in .env file");
   }
 
+  context.agentId = getUuid();
+
   // construct payload for bot provisioning
   const payload: DeclarativeAgentBotDefinition = {
     GptDefinition: {
-      id: agentManifest.value.id,
+      id: context.agentId,
       name: agentManifest.value.name,
       teams_app_id: state.m365AppId,
     },
@@ -130,24 +127,25 @@ async function provisionBot(context: DeclarativeAgentBotContext): Promise<void> 
   };
 
   // provision bot
-  const result = await context.tokenProvider!.getAccessToken({
+  const tokenResult = await TOOLS.tokenProvider.m365TokenProvider.getAccessToken({
     scopes: CopilotStudioScopes,
   });
 
-  if (result.isErr()) {
-    throw result.error;
+  if (tokenResult.isErr()) {
+    throw tokenResult.error;
   }
 
-  await copilotStudioClient.createBot(result.value, payload, state.tenantId);
+  await copilotStudioClient.createBot(tokenResult.value, payload, state.tenantId);
+  await context.writeEnv("AGENT_ID", context.agentId);
 }
 
 async function getBotId(context: DeclarativeAgentBotContext): Promise<void> {
-  const result = await context.tokenProvider!.getAccessToken({
+  const tokenResult = await TOOLS.tokenProvider.m365TokenProvider.getAccessToken({
     scopes: CopilotStudioScopes,
   });
 
-  if (result.isErr()) {
-    return;
+  if (tokenResult.isErr()) {
+    throw tokenResult.error;
   }
 
   const state = loadStateFromEnv(new Map(Object.entries(defaultOutputNames)));
@@ -155,22 +153,11 @@ async function getBotId(context: DeclarativeAgentBotContext): Promise<void> {
     throw new Error("M365 app id or tenant id is not found in .env file");
   }
 
-  const accessToken = result.value;
-  if (context.declarativeAgentId) {
-    const botId = await copilotStudioClient.getBot(
-      accessToken,
-      context.declarativeAgentId,
-      state.tenantId
-    );
+  const accessToken = tokenResult.value;
+  if (context.agentId) {
+    const botId = await copilotStudioClient.getBot(accessToken, context.agentId, state.tenantId);
     context.teamsBotId = botId;
-  }
-}
-
-async function updateEnv(context: DeclarativeAgentBotContext): Promise<void> {
-  if (context.teamsBotId) {
-    await envUtil.writeEnv(context.projectPath, context.env, {
-      BOT_ID: context.teamsBotId,
-    });
+    await context.writeEnv("BOT_ID", botId);
   }
 }
 

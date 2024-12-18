@@ -15,7 +15,7 @@ export class CopilotStudioClient {
    */
   createRequesterWithToken(token: string, tenantId: string): AxiosInstance {
     const instance = WrappedAxiosClient.create({
-      baseURL: this.getTenantIslandClusterEndpoint(tenantId),
+      baseURL: `https://${this.getTenantIslandClusterEndpoint(tenantId)}`,
     });
     instance.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     instance.defaults.headers.common["Client-Source"] = "teamstoolkit";
@@ -63,9 +63,10 @@ export class CopilotStudioClient {
     }
   }
 
-  getTenantIslandClusterEndpoint(tenantId: string): string | undefined {
+  getTenantIslandClusterEndpoint(tenantId: string): string {
     const env = process.env.COPILOT_STUDIO_ENV === "test" ? "test" : "prod";
-    return new PowerPlatformApiDiscovery(env).getTenantIslandClusterEndpoint(tenantId);
+    const discovery = new PowerPlatformApiDiscovery(env);
+    return discovery.getTenantIslandClusterEndpoint(tenantId);
   }
 }
 

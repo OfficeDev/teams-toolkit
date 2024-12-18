@@ -26,6 +26,7 @@ import { teamsappUpdateCommand } from "./teamsapp/update";
 import { teamsappValidateCommand } from "./teamsapp/validate";
 import { upgradeCommand } from "./upgrade";
 import { commands } from "../../resource";
+import { declarativeAgentToBotCommand } from "./declarativeAgentToBot";
 
 export const helpCommand: CLICommand = {
   name: "help",
@@ -63,6 +64,7 @@ export const rootCommand: CLICommand = {
     m365SideloadingCommand,
     m365UnacquireCommand,
     m365LaunchInfoCommand,
+    declarativeAgentToBotCommand,
   ],
   sortCommands: true,
   options: [

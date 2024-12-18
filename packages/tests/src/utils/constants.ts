@@ -49,7 +49,7 @@ export enum TemplateProject {
   Dashboard = "Team Central Dashboard",
   AssistDashboard = "Developer Assist Dashboard",
   DiceRoller = "Dice Roller in meeting",
-  OutlookTab = "Hello World Teams Tab Outlook add-in",
+  OutlookTab = "Hello World Teams Tab and Outlook add-in",
   OutlookSignature = "Set signature using Outlook add-in",
   ChefBot = "Teams Chef Bot",
   GraphConnectorBot = "Graph Connector Bot",

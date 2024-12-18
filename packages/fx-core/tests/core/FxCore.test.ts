@@ -681,6 +681,38 @@ describe("Core basic APIs", () => {
     }
   });
 
+  it("convertAadToNewSchema show message when manifest is in new schema", async () => {
+    const restore = mockedEnv({
+      TEAMSFX_DEBUG_TEMPLATE: "true", // workaround test failure that when local template not released to GitHub
+      NODE_ENV: "development", // workaround test failure that when local template not released to GitHub
+    });
+
+    try {
+      const core = new FxCore(tools);
+      const appName = await mockV3Project();
+      const projectPath = path.join(os.tmpdir(), appName);
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: projectPath,
+        [QuestionNames.AadAppManifestFilePath]: `${projectPath}/aad.manifest.json`,
+      };
+
+      sandbox.stub(fs, "readJson").resolves({ displayName: "displayName" });
+      const showMessageStub = sandbox.stub(tools.ui, "showMessage");
+
+      const result = await core.convertAadToNewSchema(inputs);
+      sandbox.assert.calledOnceWithExactly(
+        showMessageStub,
+        "info",
+        getLocalizedString("core.convertAadToNewSchema.alreadyNewSchema") as any,
+        false
+      );
+      assert.isTrue(result.isOk());
+    } finally {
+      restore();
+    }
+  });
+
   it("addSso method should exist", async () => {
     const restore = mockedEnv({
       TEAMSFX_DEBUG_TEMPLATE: "true", // workaround test failures when template changed but not release to GitHub alpha template

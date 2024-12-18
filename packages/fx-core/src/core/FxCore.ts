@@ -850,6 +850,16 @@ export class FxCore {
 
     const manifest = await fs.readJson(manifestTemplatePath);
     const context = createContext();
+
+    if (AadManifestHelper.isNewAADManifestSchema(manifest)) {
+      void (await context.userInteraction.showMessage(
+        "info",
+        getLocalizedString("core.convertAadToNewSchema.alreadyNewSchema"),
+        false
+      ));
+      return ok(undefined);
+    }
+
     const confirmRes = await context.userInteraction.showMessage(
       "warn",
       getLocalizedString("core.convertAadToNewSchema.warning"),

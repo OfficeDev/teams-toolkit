@@ -485,7 +485,7 @@ describe("OfficeAddinGeneratorNew", () => {
     afterEach(() => {
       sandbox.restore();
     });
-    it(`should return office-addin-config template`, async () => {
+    it(`should return office-addin-config template officeMetaOS`, async () => {
       sandbox.stub(OfficeAddinGenerator, "doScaffolding").resolves(ok(undefined));
       const inputs: Inputs = {
         platform: Platform.CLI,
@@ -493,6 +493,25 @@ describe("OfficeAddinGeneratorNew", () => {
       };
       inputs[QuestionNames.ProjectType] = ProjectTypeOptions.officeMetaOS().id;
       inputs[QuestionNames.Capabilities] = CapabilityOptions.officeAddinImport().id;
+      const res = await generator.getTemplateInfos(context, inputs, "./");
+      chai.assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        const templates = res.value;
+        chai.assert.isTrue(templates.length === 1);
+        const template = templates[0];
+        chai.assert.equal(template.templateName, "office-addin-config");
+        chai.assert.isTrue(template.language === ProgrammingLanguage.TS);
+      }
+    });
+
+    it(`should return office-addin-config template outlookAddin`, async () => {
+      sandbox.stub(OfficeAddinGenerator, "doScaffolding").resolves(ok(undefined));
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+      };
+      inputs[QuestionNames.ProjectType] = ProjectTypeOptions.outlookAddin().id;
+      inputs[QuestionNames.Capabilities] = CapabilityOptions.outlookAddinImport().id;
       const res = await generator.getTemplateInfos(context, inputs, "./");
       chai.assert.isTrue(res.isOk());
       if (res.isOk()) {
@@ -519,6 +538,24 @@ describe("OfficeAddinGeneratorNew", () => {
         chai.assert.isTrue(templates.length === 1);
         const template = templates[0];
         chai.assert.isTrue(template.templateName === "office-addin-outlook-taskpane");
+        chai.assert.isTrue(template.language === ProgrammingLanguage.TS);
+      }
+    });
+    it(`should return office-addin-outlook-taskpane template`, async () => {
+      sandbox.stub(OfficeAddinGenerator, "doScaffolding").resolves(ok(undefined));
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+      };
+      inputs[QuestionNames.ProjectType] = ProjectTypeOptions.officeMetaOS().id;
+      inputs[QuestionNames.Capabilities] = CapabilityOptions.officeAddinTaskpane().id;
+      const res = await generator.getTemplateInfos(context, inputs, "./");
+      chai.assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        const templates = res.value;
+        chai.assert.isTrue(templates.length === 1);
+        const template = templates[0];
+        chai.assert.isTrue(template.templateName === "office-addin-wxpo-taskpane");
         chai.assert.isTrue(template.language === ProgrammingLanguage.TS);
       }
     });

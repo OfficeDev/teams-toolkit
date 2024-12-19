@@ -53,7 +53,7 @@ describe("Local Debug Tests", function () {
         localDebugTestContext.testRootFolder,
         localDebugTestContext.appName
       );
-      validateFileExist(projectPath, "src/index.js");
+      validateFileExist(projectPath, "src/index.ts");
       const envPath = path.resolve(projectPath, "env", ".env.local.user");
       const isRealKey = OpenAiKey.azureOpenAiKey ? true : false;
       const azureOpenAiKey = OpenAiKey.azureOpenAiKey
@@ -88,7 +88,7 @@ describe("Local Debug Tests", function () {
           throw new Error("Failed to install packages");
         }
 
-        const insertDataCmd = `npm run assistant:create -- ${azureOpenAiKey}`;
+        const insertDataCmd = `npm run assistant:create -- '${azureOpenAiKey}'`;
         const {
           success: insertDataSuccess,
           stdout: log,

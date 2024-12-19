@@ -162,7 +162,7 @@ describe("scaffold question", () => {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
           assert.isTrue(options.length === 6);
-          assert.isUndefined((options as OptionItem[])[0].groupName);
+          assert.isNotEmpty((options as OptionItem[])[0].groupName);
           return ok({ type: "success", result: ProjectTypeOptions.bot().id });
         } else if (question.name === QuestionNames.Capabilities) {
           const select = question as SingleSelectQuestion;
@@ -2220,10 +2220,12 @@ describe("scaffold question", () => {
           const validationSchema = question.validation as FuncValidation<string[]>;
           const res = await validationSchema.validFunc!(["operation1", "operation2"], inputs);
 
-          assert.deepEqual(inputs.apiAuthData, {
-            serverUrl: "https://server1",
-            authName: "oauth2",
-          });
+          assert.deepEqual(inputs.apiAuthData, [
+            {
+              serverUrl: "https://server1",
+              authName: "oauth2",
+            },
+          ]);
           assert.isUndefined(res);
         });
 
@@ -2692,7 +2694,7 @@ describe("scaffold question", () => {
           assert.isUndefined(res);
         });
 
-        it(" validate operations should return error message when select APIs with multiple auth", async () => {
+        it(" validate operations should return not error message when select APIs with multiple auth", async () => {
           const question = apiOperationQuestion();
           const inputs: Inputs = {
             platform: Platform.VSCode,
@@ -2731,13 +2733,7 @@ describe("scaffold question", () => {
           const validationSchema = question.validation as FuncValidation<string[]>;
           const res = await validationSchema.validFunc!(["operation1", "operation2"], inputs);
 
-          assert.equal(
-            res,
-            getLocalizedString(
-              "core.createProjectQuestion.apiSpec.operation.multipleAuth",
-              ["auth1", "auth2"].join(", ")
-            )
-          );
+          assert.equal(res, undefined);
         });
 
         it("list operations error", async () => {
@@ -2789,10 +2785,11 @@ describe("scaffold question", () => {
                 api: "get operation1",
                 server: "https://server",
                 auth: {
-                  name: "bearerAuth",
+                  name: "apiKey",
                   authScheme: {
-                    type: "http",
-                    scheme: "bearer",
+                    type: "apiKey",
+                    in: "header",
+                    name: "api_key",
                   },
                 },
                 operationId: "getOperation1",
@@ -2852,10 +2849,10 @@ describe("scaffold question", () => {
             {
               id: "get operation1",
               label: "get operation1",
-              detail: "API Key authentication(Bearer token authentication)",
+              detail: "API Key authentication(In header or query)",
               groupName: "GET",
               data: {
-                authName: "bearerAuth",
+                authName: "apiKey",
                 serverUrl: "https://server",
                 authType: "apiKey",
               },
@@ -3598,7 +3595,7 @@ describe("scaffold question", () => {
           const options = await select.dynamicOptions!(inputs);
           assert.isTrue(options.length === 7);
           assert.equal(
-            getLocalizedString("core.createProjectQuestion.projectType.createGroup.title"),
+            getLocalizedString("core.createProjectQuestion.projectType.createGroup.aiAgent"),
             (options as OptionItem[])[0].groupName
           );
           return ok({ type: "success", result: ProjectTypeOptions.bot().id });

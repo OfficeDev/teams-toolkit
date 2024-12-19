@@ -80,8 +80,6 @@ export function scaffoldQuestionForVSCode(): IQTreeNode {
             ProjectTypeOptions.me(),
             featureFlagManager.getBooleanValue(FeatureFlags.OfficeMetaOS)
               ? ProjectTypeOptions.officeMetaOS()
-              : featureFlagManager.getBooleanValue(FeatureFlags.OfficeAddin)
-              ? ProjectTypeOptions.officeAddin()
               : ProjectTypeOptions.outlookAddin(),
           ],
         },
@@ -735,8 +733,6 @@ export function scaffoldQuestionForVSCode(): IQTreeNode {
                 CapabilityOptions.jsonTaskPane(),
                 ...(featureFlagManager.getBooleanValue(FeatureFlags.OfficeMetaOS)
                   ? [CapabilityOptions.officeAddinImport()]
-                  : featureFlagManager.getBooleanValue(FeatureFlags.OfficeAddin)
-                  ? [CapabilityOptions.officeContentAddin(), CapabilityOptions.officeAddinImport()]
                   : [CapabilityOptions.outlookAddinImport()]),
               ],
               placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),

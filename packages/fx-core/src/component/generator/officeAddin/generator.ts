@@ -5,46 +5,32 @@
  * @author yefuwang@microsoft.com
  */
 
-import { hooks } from "@feathersjs/hooks/lib";
 import {
   Context,
+  devPreview,
+  err,
   FxError,
   GeneratorResult,
   Inputs,
   ManifestUtil,
-  Result,
-  devPreview,
-  err,
   ok,
+  Result,
 } from "@microsoft/teamsfx-api";
-import * as childProcess from "child_process";
-import { toLower } from "lodash";
-import { OfficeAddinManifest } from "office-addin-manifest";
 import { convertProject } from "office-addin-project";
-import { join } from "path";
-import { promisify } from "util";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { assembleError, InputValidationError } from "../../../error";
+import { getUuid } from "../../../common/stringUtils";
+import { assembleError } from "../../../error";
 import {
   CapabilityOptions,
   ProgrammingLanguage,
   ProjectTypeOptions,
   QuestionNames,
 } from "../../../question/constants";
-import { getOfficeAddinFramework, getOfficeAddinTemplateConfig } from "../../../question/create";
-import { ActionContext, ActionExecutionMW } from "../../middleware/actionExecutionMW";
-import { Generator } from "../generator";
+import { ActionContext } from "../../middleware/actionExecutionMW";
+import { envUtil } from "../../utils/envUtil";
 import { DefaultTemplateGenerator } from "../templates/templateGenerator";
 import { TemplateInfo } from "../templates/templateInfo";
-import { convertToLangKey } from "../utils";
 import { HelperMethods } from "./helperMethods";
-import { envUtil } from "../../utils/envUtil";
-import { getUuid } from "../../../common/stringUtils";
-
-const componentName = "office-addin";
-const telemetryEvent = "generate";
-const templateName = "office-addin";
-const templateNameForWXPO = "office-json-addin";
 
 /**
  * case 1: project-type=office-xml-addin-type AND addin-host=outlook
@@ -52,48 +38,6 @@ const templateNameForWXPO = "office-json-addin";
  * case 3: project-type=outlook-addin-type (addin-host=undefined)
  */
 export class OfficeAddinGenerator {
-  @hooks([
-    ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryComponentName: componentName,
-      telemetryEventName: telemetryEvent,
-      errorSource: componentName,
-    }),
-  ])
-  static async generate(
-    context: Context,
-    inputs: Inputs,
-    destinationPath: string
-  ): Promise<Result<undefined, FxError>> {
-    const result = await OfficeAddinGenerator.doScaffolding(context, inputs, destinationPath);
-    if (result.isErr()) {
-      return err(result.error);
-    }
-
-    // If lang is undefined, it means the project is created from a folder.
-    const lang = toLower(inputs[QuestionNames.ProgrammingLanguage]) as "javascript" | "typescript";
-    const langKey =
-      inputs[QuestionNames.Capabilities] === CapabilityOptions.outlookAddinImport().id ||
-      inputs[QuestionNames.Capabilities] === CapabilityOptions.officeAddinImport().id
-        ? "ts"
-        : convertToLangKey(lang);
-    const templateRes = await Generator.generateTemplate(
-      context,
-      destinationPath,
-      inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeAddin().id
-        ? templateNameForWXPO
-        : templateName,
-      langKey
-    );
-    if (templateRes.isErr()) return err(templateRes.error);
-
-    return ok(undefined);
-  }
-
-  public static async childProcessExec(cmdLine: string) {
-    return promisify(childProcess.exec)(cmdLine);
-  }
-
   public static async doScaffolding(
     context: Context,
     inputs: Inputs,
@@ -189,21 +133,31 @@ export class OfficeAddinGeneratorNew extends DefaultTemplateGenerator {
     actionContext?: ActionContext
   ): Promise<Result<TemplateInfo[], FxError>> {
     const projectType = inputs[QuestionNames.ProjectType];
-    const tplName =
-      projectType === ProjectTypeOptions.officeMetaOS().id ||
-      projectType === ProjectTypeOptions.officeAddin().id
-        ? templateNameForWXPO
-        : templateName;
-    let lang = toLower(inputs[QuestionNames.ProgrammingLanguage]) as ProgrammingLanguage;
-    lang =
-      inputs[QuestionNames.Capabilities] === CapabilityOptions.outlookAddinImport().id ||
-      inputs[QuestionNames.Capabilities] === CapabilityOptions.officeAddinImport().id
-        ? ProgrammingLanguage.TS
-        : lang;
+    const capability = inputs[QuestionNames.Capabilities];
+    let templateName;
+    if (projectType === ProjectTypeOptions.officeMetaOS().id) {
+      if (capability === CapabilityOptions.outlookAddinImport().id) {
+        templateName = "office-addin-config";
+      } else {
+        templateName = "office-addin-wxpo-taskpane";
+      }
+    } else {
+      if (capability === CapabilityOptions.outlookAddinImport().id) {
+        templateName = "office-addin-config";
+      } else {
+        templateName = "office-addin-outlook-taskpane";
+      }
+    }
     const res = await OfficeAddinGenerator.doScaffolding(context, inputs, destinationPath);
     if (res.isErr()) return err(res.error);
     return Promise.resolve(
-      ok([{ templateName: tplName, language: lang, replaceMap: { manifestId: getUuid() } }])
+      ok([
+        {
+          templateName: templateName,
+          language: ProgrammingLanguage.TS,
+          replaceMap: { manifestId: getUuid() },
+        },
+      ])
     );
   }
 

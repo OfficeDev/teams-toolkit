@@ -246,21 +246,9 @@ export class ProjectTypeOptions {
     };
   }
 
-  static officeAddin(platform?: Platform): OptionItem {
-    return {
-      id: "office-addin-type",
-      label: `${platform === Platform.VSCode ? "$(extensions) " : ""}${getLocalizedString(
-        "core.createProjectQuestion.projectType.officeAddin.label"
-      )}`,
-      detail: getLocalizedString("core.createProjectQuestion.projectType.officeAddin.detail"),
-      groupName: ProjectTypeOptions.getCreateGroupName(),
-    };
-  }
-
   static officeAddinAllIds(platform?: Platform): string[] {
     return [
       ProjectTypeOptions.officeMetaOS(platform).id,
-      ProjectTypeOptions.officeAddin(platform).id,
       ProjectTypeOptions.outlookAddin(platform).id,
     ];
   }
@@ -577,7 +565,6 @@ export class CapabilityOptions {
     const items: OptionItem[] = [];
     const isOutlookAddin = projectType === ProjectTypeOptions.outlookAddin().id;
     const isMetaOSAddin = projectType === ProjectTypeOptions.officeMetaOS().id;
-    const isOfficeAddin = projectType === ProjectTypeOptions.officeAddin().id;
 
     const pushToItems = (option: any) => {
       const capabilityValue = OfficeAddinProjectConfig.json[option];
@@ -588,14 +575,11 @@ export class CapabilityOptions {
       });
     };
 
-    if (isOutlookAddin || isMetaOSAddin || isOfficeAddin) {
+    if (isOutlookAddin || isMetaOSAddin) {
       pushToItems("json-taskpane");
       if (isOutlookAddin) {
         items.push(CapabilityOptions.outlookAddinImport());
       } else if (isMetaOSAddin) {
-        items.push(CapabilityOptions.officeAddinImport());
-      } else {
-        items.push(CapabilityOptions.officeContentAddin());
         items.push(CapabilityOptions.officeAddinImport());
       }
     } else {

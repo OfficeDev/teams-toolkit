@@ -110,6 +110,11 @@ export enum QuestionNames {
   TemplateName = "template-name",
 }
 
+export enum ProjectTypeGroup {
+  AIAgent = "AI Agent",
+  M365Apps = "Apps for Microsoft 365",
+}
+
 export const AppNamePattern =
   '^(?=(.*[\\da-zA-Z]){2})[a-zA-Z][^"<>:\\?/*&|\u0000-\u001F]*[^"\\s.<>:\\?/*&|\u0000-\u001F]$';
 
@@ -184,10 +189,13 @@ export class ScratchOptions {
 }
 
 export class ProjectTypeOptions {
-  static getCreateGroupName(): string | undefined {
-    return featureFlagManager.getBooleanValue(FeatureFlags.ChatParticipantUIEntries)
-      ? getLocalizedString("core.createProjectQuestion.projectType.createGroup.title")
-      : undefined;
+  static getCreateGroupName(group: ProjectTypeGroup): string | undefined {
+    switch (group) {
+      case ProjectTypeGroup.AIAgent:
+        return getLocalizedString("core.createProjectQuestion.projectType.createGroup.aiAgent");
+      case ProjectTypeGroup.M365Apps:
+        return getLocalizedString("core.createProjectQuestion.projectType.createGroup.m365Apps");
+    }
   }
   static tab(platform?: Platform): OptionItem {
     return {
@@ -196,7 +204,7 @@ export class ProjectTypeOptions {
         "core.TabOption.label"
       )}`,
       detail: getLocalizedString("core.createProjectQuestion.projectType.tab.detail"),
-      groupName: ProjectTypeOptions.getCreateGroupName(),
+      groupName: ProjectTypeOptions.getCreateGroupName(ProjectTypeGroup.M365Apps),
     };
   }
 
@@ -207,7 +215,7 @@ export class ProjectTypeOptions {
         "core.createProjectQuestion.projectType.bot.label"
       )}`,
       detail: getLocalizedString("core.createProjectQuestion.projectType.bot.detail"),
-      groupName: ProjectTypeOptions.getCreateGroupName(),
+      groupName: ProjectTypeOptions.getCreateGroupName(ProjectTypeGroup.M365Apps),
     };
   }
 
@@ -220,7 +228,7 @@ export class ProjectTypeOptions {
       detail: getLocalizedString(
         "core.createProjectQuestion.projectType.messageExtension.copilotEnabled.detail"
       ),
-      groupName: ProjectTypeOptions.getCreateGroupName(),
+      groupName: ProjectTypeOptions.getCreateGroupName(ProjectTypeGroup.M365Apps),
     };
   }
 
@@ -231,7 +239,7 @@ export class ProjectTypeOptions {
         "core.createProjectQuestion.projectType.outlookAddin.label"
       )}`,
       detail: getLocalizedString("core.createProjectQuestion.projectType.outlookAddin.detail"),
-      groupName: ProjectTypeOptions.getCreateGroupName(),
+      groupName: ProjectTypeOptions.getCreateGroupName(ProjectTypeGroup.M365Apps),
     };
   }
 
@@ -242,7 +250,7 @@ export class ProjectTypeOptions {
         "core.createProjectQuestion.projectType.officeAddin.label"
       )}`,
       detail: getLocalizedString("core.createProjectQuestion.projectType.officeAddin.detail"),
-      groupName: ProjectTypeOptions.getCreateGroupName(),
+      groupName: ProjectTypeOptions.getCreateGroupName(ProjectTypeGroup.M365Apps),
     };
   }
 
@@ -260,7 +268,7 @@ export class ProjectTypeOptions {
         "core.createProjectQuestion.projectType.declarativeAgent.label"
       )}`,
       detail: getLocalizedString("core.createProjectQuestion.projectType.declarativeAgent.detail"),
-      groupName: ProjectTypeOptions.getCreateGroupName(),
+      groupName: ProjectTypeOptions.getCreateGroupName(ProjectTypeGroup.AIAgent),
     };
   }
 
@@ -271,7 +279,7 @@ export class ProjectTypeOptions {
         platform === Platform.VSCode ? "$(teamsfx-custom-copilot) " : ""
       }${getLocalizedString("core.createProjectQuestion.projectType.customCopilot.label")}`,
       detail: getLocalizedString("core.createProjectQuestion.projectType.customCopilot.detail"),
-      groupName: ProjectTypeOptions.getCreateGroupName(),
+      groupName: ProjectTypeOptions.getCreateGroupName(ProjectTypeGroup.AIAgent),
     };
   }
 

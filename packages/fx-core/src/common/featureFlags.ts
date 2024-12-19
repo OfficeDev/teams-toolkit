@@ -27,11 +27,11 @@ export class FeatureFlagName {
   static readonly TelemetryTest = "TEAMSFX_TELEMETRY_TEST";
   static readonly DevTunnelTest = "TEAMSFX_DEV_TUNNEL_TEST";
   static readonly SyncManifest = "TEAMSFX_SYNC_MANIFEST";
-  static readonly EnvFileFunc = "TEAMSFX_ENV_FILE_FUNC";
   static readonly KiotaIntegration = "TEAMSFX_KIOTA_INTEGRATION";
   static readonly ApiPluginAAD = "TEAMSFX_API_PLUGIN_AAD";
   static readonly CEAEnabled = "TEAMSFX_CEA_ENABLED";
   static readonly MultiTenant = "TEAMSFX_MULTI_TENANT";
+  static readonly ApiPluginDebug = "TEAMSFX_API_PLUGIN_DEBUG";
 }
 
 export interface FeatureFlag {
@@ -82,10 +82,6 @@ export class FeatureFlags {
     name: FeatureFlagName.SyncManifest,
     defaultValue: "false",
   };
-  static readonly EnvFileFunc = {
-    name: FeatureFlagName.EnvFileFunc,
-    defaultValue: "true", // Set it to true for dogfooding.
-  };
   static readonly KiotaIntegration = {
     name: FeatureFlagName.KiotaIntegration,
     defaultValue: "false",
@@ -100,6 +96,10 @@ export class FeatureFlags {
   };
   static readonly MultiTenant = {
     name: FeatureFlagName.MultiTenant,
+    defaultValue: "false",
+  };
+  static readonly ApiPluginDebug = {
+    name: FeatureFlagName.ApiPluginDebug,
     defaultValue: "false",
   };
 }

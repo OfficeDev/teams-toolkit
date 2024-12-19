@@ -130,36 +130,31 @@ You can use the [Adaptive Card Designer](https://adaptivecards.io/designer/) to 
 
 ### Step 3: Handle the command
 
-The TeamsFx SDK provides a convenient class, `TeamsFxBotCommandHandler`, to handle when an command is triggered from Teams conversation message. Create a new file, `src/doSomethingCommandHandler.ts`:
+Create a new file, `src/doSomethingCommandHandler.ts`:
 
 ```typescript
 import { Activity, CardFactory, MessageFactory, TurnContext } from "botbuilder";
-import {
-  CommandMessage,
-  TeamsFxBotCommandHandler,
-  TriggerPatterns,
-  MessageBuilder,
-} from "@microsoft/teamsfx";
+import { Selector } from "@microsoft/teams-ai";
 import doSomethingCard from "./adaptiveCards/doSomethingCommandResponse.json";
-import { AdaptiveCards } from "@microsoft/adaptivecards-tools";
+import * as ACData from "adaptivecards-templating";
 import { CardData } from "./cardModels";
 
 export class DoSomethingCommandHandler implements TeamsFxBotCommandHandler {
-  triggerPatterns: TriggerPatterns = "doSomething";
+  triggerPatterns: string | RegExp | Selector | (string | RegExp | Selector)[] = "doSomething";
 
   async handleCommandReceived(
     context: TurnContext,
-    message: CommandMessage
+    state: ApplicationTurnState
   ): Promise<string | Partial<Activity>> {
     // verify the command arguments which are received from the client if needed.
-    console.log(`App received message: ${message.text}`);
+    console.log(`App received message: ${context.activity.text}`);
 
-    const cardData: CardData = {
-      title: "doSomething command is added",
-      body: "Congratulations! You have responded to doSomething command",
-    };
-
-    const cardJson = AdaptiveCards.declare(doSomethingCard).render(cardData);
+    const cardJson = new ACData.Template(helloWorldCard).expand({
+      $root: {
+        title: "doSomething command is added",
+        body: "Congratulations! You have responded to doSomething command",
+      },
+    });
     return MessageFactory.attachment(CardFactory.adaptiveCard(cardJson));
   }
 }
@@ -169,21 +164,20 @@ You can customize what the command does here, including calling an API, process 
 
 ### Step 4: Register the new command
 
-Each new command needs to be configured in the `ConversationBot`, which powers the conversational flow of the command bot template. Navigate to the `src/internal/initialize.ts` file and update the `commands` array of the `command` property:
+Each new command needs to be configured in the `ConversationBot`, which powers the conversational flow of the command bot template. Navigate to the `src/index.ts` file and register the trigger pattern to `app.message()`:
 
 ```typescript
-import { HelloWorldCommandHandler } from "../helloworldCommandHandler";
-import { DoSomethingCommandHandler } from "../doSomethingCommandHandler";
-import { BotBuilderCloudAdapter } from "@microsoft/teamsfx";
-import ConversationBot = BotBuilderCloudAdapter.ConversationBot;
+const doSomethingCommandHandler = new DoSomethingCommandHandler();
+app.message(
+  doSomethingCommandHandler.triggerPatterns,
+  async (context: TurnContext, state: ApplicationTurnState) => {
+    const reply = await doSomethingCommandHandler.handleCommandReceived(context, state);
 
-const commandApp = new ConversationBot({
-  //...
-  command: {
-    enabled: true,
-    commands: [new HelloWorldCommandHandler(), new DoSomethingCommandHandler()],
-  },
-});
+    if (reply) {
+      await context.sendActivity(reply);
+    }
+  }
+);
 ```
 
 Congratulations, you've just created your own command! To learn more about the command bot template, [visit the documentation on GitHub](https://aka.ms/teamsfx-command-new). You can find more scenarios like:

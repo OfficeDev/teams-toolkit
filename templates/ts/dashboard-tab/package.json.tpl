@@ -10,7 +10,7 @@
         "@fluentui/react-charting": "^5.14.10",
         "@fluentui/react-components": "^9.55.1",
         "@fluentui/react-icons": "^2.0.186",
-        "@microsoft/teams-js": "^2.22.0",
+        "@microsoft/teams-js": "^2.31.1",
         "@microsoft/teamsfx": "^3.0.0",
         "@microsoft/teamsfx-react": "^4.0.0",
         "react": "^18.2.0",

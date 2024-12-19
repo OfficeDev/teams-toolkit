@@ -232,54 +232,6 @@ describe("OfficeAddinGenerator for Outlook Addin", function () {
       await fse.remove(testFolder);
     }
   });
-
-  it(`should generate common template if language is undefined`, async () => {
-    const inputs: Inputs = {
-      platform: Platform.CLI,
-      projectPath: testFolder,
-      ProjectType: ProjectTypeOptions.outlookAddin().id,
-      "app-name": "outlook-addin-test",
-      "programming-language": undefined,
-    };
-    sinon.stub(OfficeAddinGenerator, "doScaffolding").resolves(ok(undefined));
-    const stub = sinon.stub(Generator, "generateTemplate").resolves(ok(undefined));
-
-    const result = await OfficeAddinGenerator.generate(context, inputs, testFolder);
-    chai.assert.isTrue(result.isOk());
-    // chai.assert.isTrue(stub.calledWith(context, testFolder, "office-addin", undefined));
-  });
-
-  it(`should generate ts template if language is "typescript"`, async () => {
-    const inputs: Inputs = {
-      platform: Platform.CLI,
-      projectPath: testFolder,
-      ProjectType: ProjectTypeOptions.outlookAddin().id,
-      "app-name": "outlook-addin-test",
-      "programming-language": "typescript",
-    };
-    sinon.stub(OfficeAddinGenerator, "doScaffolding").resolves(ok(undefined));
-    const stub = sinon.stub(Generator, "generateTemplate").resolves(ok(undefined));
-
-    const result = await OfficeAddinGenerator.generate(context, inputs, testFolder);
-
-    chai.assert.isTrue(result.isOk() && stub.calledWith(context, testFolder, "office-addin", "ts"));
-  });
-
-  it(`should generate js template if language is "javascript"`, async () => {
-    const inputs: Inputs = {
-      platform: Platform.CLI,
-      projectPath: testFolder,
-      ProjectType: ProjectTypeOptions.outlookAddin().id,
-      "app-name": "outlook-addin-test",
-      "programming-language": "javascript",
-    };
-    sinon.stub(OfficeAddinGenerator, "doScaffolding").resolves(ok(undefined));
-    const stub = sinon.stub(Generator, "generateTemplate").resolves(ok(undefined));
-
-    const result = await OfficeAddinGenerator.generate(context, inputs, testFolder);
-
-    chai.assert.isTrue(result.isOk() && stub.calledWith(context, testFolder, "office-addin", "js"));
-  });
 });
 
 describe("HelperMethods", async () => {

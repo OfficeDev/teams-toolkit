@@ -252,17 +252,6 @@ export class ProjectTypeOptions {
     };
   }
 
-  static officeAddin(platform?: Platform): OptionItem {
-    return {
-      id: "office-addin-type",
-      label: `${platform === Platform.VSCode ? "$(extensions) " : ""}${getLocalizedString(
-        "core.createProjectQuestion.projectType.officeAddin.label"
-      )}`,
-      detail: getLocalizedString("core.createProjectQuestion.projectType.officeAddin.detail"),
-      groupName: ProjectTypeOptions.getCreateGroupName(ProjectTypeGroup.M365Apps),
-    };
-  }
-
   static officeAddinAllIds(platform?: Platform): string[] {
     return [
       ProjectTypeOptions.officeMetaOS(platform).id,

@@ -434,192 +434,14 @@ describe("OfficeAddinGenerator for Office Addin", function () {
       platform: Platform.CLI,
       projectPath: testFolder,
       "app-name": "office-addin-test",
-      "office-addin-framework-type": "default",
     };
-    inputs[QuestionNames.ProjectType] = ProjectTypeOptions.officeAddin().id;
-    inputs[QuestionNames.Capabilities] = "json-taskpane";
+    inputs[QuestionNames.ProjectType] = ProjectTypeOptions.outlookAddin().id;
+    inputs[QuestionNames.Capabilities] = CapabilityOptions.officeAddinTaskpane().id;
     inputs[QuestionNames.OfficeAddinFolder] = undefined;
     inputs[QuestionNames.ProgrammingLanguage] = "typescript";
-
-    sinon.stub(HelperMethods, "fetchAndUnzip").resolves(ok(undefined));
-    sinon.stub(OfficeAddinManifest, "modifyManifestFile").resolves({});
     const result = await OfficeAddinGenerator.doScaffolding(context, inputs, testFolder);
-
     chai.expect(result.isOk()).to.eq(true);
   });
-
-  it("should scaffold taskpane successfully on happy path if project-type is officeAddin and capability is office-content-addin", async () => {
-    const inputs: Inputs = {
-      platform: Platform.CLI,
-      projectPath: testFolder,
-      "app-name": "office-addin-test",
-    };
-    inputs[QuestionNames.ProjectType] = ProjectTypeOptions.officeAddin().id;
-    inputs[QuestionNames.Capabilities] = CapabilityOptions.officeContentAddin().id;
-    inputs[QuestionNames.OfficeAddinFolder] = undefined;
-    inputs[QuestionNames.ProgrammingLanguage] = "typescript";
-
-    sinon.stub(HelperMethods, "fetchAndUnzip").resolves(ok(undefined));
-    sinon.stub(OfficeAddinManifest, "modifyManifestFile").resolves({});
-    const result = await OfficeAddinGenerator.doScaffolding(context, inputs, testFolder);
-
-    chai.expect(result.isOk()).to.eq(true);
-  });
-
-  it("should scaffold taskpane failed, throw error", async () => {
-    const inputs: Inputs = {
-      platform: Platform.CLI,
-      projectPath: testFolder,
-      "app-name": "office-addin-test",
-    };
-    inputs[QuestionNames.ProjectType] = ProjectTypeOptions.officeAddin().id;
-    inputs[QuestionNames.Capabilities] = "json-taskpane";
-    inputs[QuestionNames.OfficeAddinFolder] = undefined;
-    inputs[QuestionNames.ProgrammingLanguage] = "typescript";
-    inputs[QuestionNames.OfficeAddinFramework] = "default";
-
-    sinon.stub(HelperMethods, "fetchAndUnzip").rejects(new UserCancelError());
-    sinon.stub(OfficeAddinManifest, "modifyManifestFile").resolves({});
-    const result = await OfficeAddinGenerator.doScaffolding(context, inputs, testFolder);
-
-    chai.expect(result.isOk()).to.eq(true);
-  });
-
-  const testCases = [
-    { scope: "document", host: "Word" },
-    { scope: "workbook", host: "Excel" },
-    { scope: "presentation", host: "PowerPoint" },
-  ];
-
-  testCases.forEach((testCase) => {
-    it(`should copy addin files and updateManifest if addin folder is specified with json manifest for ${testCase.host}`, async () => {
-      const inputs: Inputs = {
-        platform: Platform.CLI,
-        projectPath: testFolder,
-        "app-name": "office-addin-test",
-      };
-      inputs[QuestionNames.ProjectType] = ProjectTypeOptions.officeAddin().id;
-      inputs[QuestionNames.Capabilities] = "json-taskpane";
-      inputs[QuestionNames.OfficeAddinFolder] = "somepath";
-      inputs[QuestionNames.ProgrammingLanguage] = "typescript";
-      inputs[QuestionNames.OfficeAddinFramework] = "default";
-      inputs[QuestionNames.OfficeAddinManifest] = "manifest.json";
-
-      const copyAddinFilesStub = sinon
-        .stub(HelperMethods, "copyAddinFiles")
-        .callsFake((from: string, to: string) => {
-          return;
-        });
-      const updateManifestStub = sinon
-        .stub(HelperMethods, "updateManifest")
-        .callsFake(async (destination: string, manifestPath: string) => {
-          return;
-        });
-
-      sinon.stub<any, any>(ManifestUtil, "loadFromPath").resolves({
-        extensions: [
-          {
-            requirements: {
-              scopes: [testCase.scope],
-            },
-          },
-        ],
-      });
-
-      const result = await OfficeAddinGenerator.doScaffolding(context, inputs, testFolder);
-
-      chai.expect(result.isOk()).to.eq(true);
-      chai.expect(copyAddinFilesStub.calledOnce).to.be.true;
-      chai.expect(updateManifestStub.calledOnce).to.be.true;
-      chai.expect(inputs[QuestionNames.OfficeAddinHost]).to.equal(testCase.host);
-      const hostResult = await getHost(inputs[QuestionNames.OfficeAddinFolder]);
-      chai.expect(hostResult).to.equal(testCase.host);
-    });
-  });
-
-  testCases.forEach((testCase) => {
-    it(`should copy addin files and convert manifest if addin folder is specified with xml manifest for ${testCase.host}`, async () => {
-      const inputs: Inputs = {
-        platform: Platform.CLI,
-        projectPath: testFolder,
-        "app-name": "office-addin-test",
-        [QuestionNames.ProjectType]: ProjectTypeOptions.officeAddin().id,
-        [QuestionNames.Capabilities]: "json-taskpane",
-        [QuestionNames.OfficeAddinFolder]: "somepath",
-        [QuestionNames.ProgrammingLanguage]: "typescript",
-        [QuestionNames.OfficeAddinFramework]: "default",
-        [QuestionNames.OfficeAddinManifest]: "manifest.xml",
-      };
-
-      let progressBarStartCalled = 0;
-      let progressBarNextCalled = 0;
-      let progessBarEndCalled = 0;
-      const createProgressBarStub = sinon
-        .stub(context.userInteraction, "createProgressBar")
-        .returns({
-          start: async () => {
-            progressBarStartCalled++;
-          },
-          next: async () => {
-            progressBarNextCalled++;
-          },
-          end: async () => {
-            progessBarEndCalled++;
-          },
-        });
-
-      const copyAddinFilesStub = sinon
-        .stub(HelperMethods, "copyAddinFiles")
-        .callsFake((from: string, to: string) => {
-          return;
-        });
-      const updateManifestStub = sinon
-        .stub(HelperMethods, "updateManifest")
-        .callsFake(async (destination: string, manifestPath: string) => {
-          return;
-        });
-      const convertProjectStub = sinon
-        .stub()
-        .callsFake(async (manifestPath?: string, backupPath?: string) => {
-          return;
-        });
-
-      const generator = proxyquire("../../../src/component/generator/officeAddin/generator", {
-        "office-addin-project": {
-          convertProject: convertProjectStub,
-        },
-      });
-
-      sinon.stub<any, any>(ManifestUtil, "loadFromPath").resolves({
-        extensions: [
-          {
-            requirements: {
-              scopes: [testCase.scope],
-            },
-          },
-        ],
-      });
-
-      const result = await generator.OfficeAddinGenerator.doScaffolding(
-        context,
-        inputs,
-        testFolder
-      );
-
-      chai.expect(result.isOk()).to.eq(true);
-      chai.expect(copyAddinFilesStub.calledOnce).to.be.true;
-      chai.expect(updateManifestStub.calledOnce).to.be.true;
-      chai.expect(convertProjectStub.calledOnce).to.be.true;
-      chai.expect(inputs[QuestionNames.OfficeAddinHost]).to.equal(testCase.host);
-      chai.expect(progressBarStartCalled).to.eq(1);
-      chai.expect(progressBarNextCalled).to.eq(3);
-      chai.expect(progessBarEndCalled).to.eq(1);
-
-      const resultHost = await getHost(inputs[QuestionNames.OfficeAddinFolder]);
-      chai.expect(resultHost).to.equal(testCase.host);
-    });
-  });
-
   afterEach(async () => {
     sinon.restore();
     mockedEnvRestore();
@@ -641,7 +463,7 @@ describe("OfficeAddinGeneratorNew", () => {
         platform: Platform.CLI,
         projectPath: "./",
       };
-      inputs[QuestionNames.ProjectType] = ProjectTypeOptions.officeAddin().id;
+      inputs[QuestionNames.ProjectType] = ProjectTypeOptions.outlookAddin().id;
       inputs[QuestionNames.ProgrammingLanguage] = ProgrammingLanguage.JS;
       const res = generator.activate(context, inputs);
       chai.assert.isTrue(res);
@@ -663,13 +485,13 @@ describe("OfficeAddinGeneratorNew", () => {
     afterEach(() => {
       sandbox.restore();
     });
-    it(`should return office-json-addin template`, async () => {
+    it(`should return office-addin-config template`, async () => {
       sandbox.stub(OfficeAddinGenerator, "doScaffolding").resolves(ok(undefined));
       const inputs: Inputs = {
         platform: Platform.CLI,
         projectPath: "./",
       };
-      inputs[QuestionNames.ProjectType] = ProjectTypeOptions.officeAddin().id;
+      inputs[QuestionNames.ProjectType] = ProjectTypeOptions.outlookAddin().id;
       inputs[QuestionNames.Capabilities] = CapabilityOptions.officeAddinImport().id;
       const res = await generator.getTemplateInfos(context, inputs, "./");
       chai.assert.isTrue(res.isOk());
@@ -677,7 +499,7 @@ describe("OfficeAddinGeneratorNew", () => {
         const templates = res.value;
         chai.assert.isTrue(templates.length === 1);
         const template = templates[0];
-        chai.assert.isTrue(template.templateName === "office-json-addin");
+        chai.assert.isTrue(template.templateName === "office-addin-config");
         chai.assert.isTrue(template.language === ProgrammingLanguage.TS);
       }
     });
@@ -697,7 +519,7 @@ describe("OfficeAddinGeneratorNew", () => {
         const templates = res.value;
         chai.assert.isTrue(templates.length === 1);
         const template = templates[0];
-        chai.assert.isTrue(template.templateName === "office-addin");
+        chai.assert.isTrue(template.templateName === "office-addin-outlook-taskpane");
         chai.assert.isTrue(template.language === ProgrammingLanguage.JS);
       }
     });

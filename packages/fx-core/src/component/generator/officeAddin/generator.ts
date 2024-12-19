@@ -136,7 +136,7 @@ export class OfficeAddinGeneratorNew extends DefaultTemplateGenerator {
     const capability = inputs[QuestionNames.Capabilities];
     let templateName;
     if (projectType === ProjectTypeOptions.officeMetaOS().id) {
-      if (capability === CapabilityOptions.outlookAddinImport().id) {
+      if (capability === CapabilityOptions.officeAddinImport().id) {
         templateName = "office-addin-config";
       } else {
         templateName = "office-addin-wxpo-taskpane";

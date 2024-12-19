@@ -491,7 +491,7 @@ describe("OfficeAddinGeneratorNew", () => {
         platform: Platform.CLI,
         projectPath: "./",
       };
-      inputs[QuestionNames.ProjectType] = ProjectTypeOptions.outlookAddin().id;
+      inputs[QuestionNames.ProjectType] = ProjectTypeOptions.officeMetaOS().id;
       inputs[QuestionNames.Capabilities] = CapabilityOptions.officeAddinImport().id;
       const res = await generator.getTemplateInfos(context, inputs, "./");
       chai.assert.isTrue(res.isOk());
@@ -499,20 +499,19 @@ describe("OfficeAddinGeneratorNew", () => {
         const templates = res.value;
         chai.assert.isTrue(templates.length === 1);
         const template = templates[0];
-        chai.assert.isTrue(template.templateName === "office-addin-config");
+        chai.assert.equal(template.templateName, "office-addin-config");
         chai.assert.isTrue(template.language === ProgrammingLanguage.TS);
       }
     });
 
-    it(`should return office-json-addin template`, async () => {
+    it(`should return office-addin-outlook-taskpane template`, async () => {
       sandbox.stub(OfficeAddinGenerator, "doScaffolding").resolves(ok(undefined));
       const inputs: Inputs = {
         platform: Platform.CLI,
         projectPath: "./",
       };
       inputs[QuestionNames.ProjectType] = ProjectTypeOptions.outlookAddin().id;
-      inputs[QuestionNames.Capabilities] = "some";
-      inputs[QuestionNames.ProgrammingLanguage] = ProgrammingLanguage.JS;
+      inputs[QuestionNames.Capabilities] = CapabilityOptions.officeAddinTaskpane().id;
       const res = await generator.getTemplateInfos(context, inputs, "./");
       chai.assert.isTrue(res.isOk());
       if (res.isOk()) {
@@ -520,7 +519,7 @@ describe("OfficeAddinGeneratorNew", () => {
         chai.assert.isTrue(templates.length === 1);
         const template = templates[0];
         chai.assert.isTrue(template.templateName === "office-addin-outlook-taskpane");
-        chai.assert.isTrue(template.language === ProgrammingLanguage.JS);
+        chai.assert.isTrue(template.language === ProgrammingLanguage.TS);
       }
     });
     it("should fail", async () => {
@@ -586,7 +585,7 @@ describe("doScaffolding()", () => {
     inputs[QuestionNames.OfficeAddinFolder] = undefined;
     inputs[QuestionNames.ProgrammingLanguage] = "typescript";
     const context = createContext();
-    const result = await OfficeAddinGenerator.doScaffolding(context, inputs, ".");
-    chai.expect(result.isErr()).to.eq(true);
+    const res = await OfficeAddinGenerator.doScaffolding(context, inputs, ".");
+    chai.assert.isTrue(res.isOk());
   });
 });

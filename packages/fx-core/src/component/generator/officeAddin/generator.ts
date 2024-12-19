@@ -99,12 +99,8 @@ export class OfficeAddinGenerator {
     inputs: Inputs,
     destinationPath: string
   ): Promise<Result<undefined, FxError>> {
-    const name = inputs[QuestionNames.AppName] as string;
     const addinRoot = destinationPath;
     const fromFolder = inputs[QuestionNames.OfficeAddinFolder];
-    const projectType = inputs[QuestionNames.ProjectType];
-    const capability = inputs[QuestionNames.Capabilities];
-    const inputHost = inputs[QuestionNames.OfficeAddinHost];
     const workingDir = process.cwd();
     const importProgressStr = getLocalizedString(
       "core.generator.officeAddin.importOfficeProject.title"
@@ -113,58 +109,7 @@ export class OfficeAddinGenerator {
 
     process.chdir(addinRoot);
     try {
-      if (!fromFolder) {
-        let host: string = inputHost;
-        if (projectType === ProjectTypeOptions.outlookAddin().id) {
-          host = "outlook";
-        } else if (
-          projectType === ProjectTypeOptions.officeMetaOS().id ||
-          projectType === ProjectTypeOptions.officeAddin().id
-        ) {
-          if (capability === "json-taskpane") {
-            host = "wxpo"; // wxpo - support word, excel, powerpoint, outlook
-          } else if (capability === CapabilityOptions.officeContentAddin().id) {
-            host = "xp"; // content add-in support excel, powerpoint
-          }
-        }
-        if (!["outlook", "wxpo", "xp"].includes(host)) {
-          return err(
-            new InputValidationError(
-              QuestionNames.OfficeAddinHost,
-              `Invalid host: ${host}`,
-              "office-addin-generator"
-            )
-          );
-        }
-        // from template
-        const templateConfig = getOfficeAddinTemplateConfig();
-        const projectLink =
-          projectType === ProjectTypeOptions.officeMetaOS().id
-            ? "https://github.com/OfficeDev/Office-Addin-TaskPane/archive/json-wxpo-preview.zip"
-            : "";
-
-        // Copy project template files from project repository
-        if (projectLink) {
-          const fetchRes = await HelperMethods.fetchAndUnzip(
-            "office-addin-generator",
-            projectLink,
-            addinRoot
-          );
-          if (fetchRes.isErr()) {
-            return err(fetchRes.error);
-          }
-          const cmdLine = `npm run convert-to-single-host --if-present -- ${host} json`; // Call 'convert-to-single-host' npm script in generated project, passing in host parameter
-          await OfficeAddinGenerator.childProcessExec(cmdLine);
-          const manifestPath = templateConfig[capability].manifestPath as string;
-          // modify manifest guid and DisplayName
-          await OfficeAddinManifest.modifyManifestFile(
-            `${join(addinRoot, manifestPath)}`,
-            "random",
-            `${name}`
-          );
-          await HelperMethods.moveManifestLocation(addinRoot, manifestPath);
-        }
-      } else {
+      if (fromFolder) {
         await importProgress.start();
         // from existing project
         await importProgress.next(

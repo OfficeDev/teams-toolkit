@@ -1,3 +1,5 @@
 tab/csharp/default/*
 tab/csharp/non-sso/*
 **/*.css
+ts/office-json-addin/*
+js/office-json-addin/*

@@ -7,7 +7,7 @@ environmentFolderPath: ./env
 
 # Triggered when 'teamsapp provision' is executed
 provision:
-  - uses: arm/deploy  # Deploy given ARM templates parallelly.
+  - uses: arm/deploy # Deploy given ARM templates parallelly.
     with:
       # AZURE_SUBSCRIPTION_ID is a built-in environment variable,
       # if its value is empty, TeamsFx will prompt you to select a subscription.
@@ -21,7 +21,7 @@ provision:
       # will skip the resource group selection prompt.
       resourceGroupName: ${{AZURE_RESOURCE_GROUP_NAME}}
       templates:
-        - path: ./infra/azure.bicep  # Relative path to this file
+        - path: ./infra/azure.bicep # Relative path to this file
           # Relative path to this yaml file.
           # Placeholders will be replaced with corresponding environment
           # variable before ARM deployment.
@@ -61,3 +61,4 @@ deploy:
     with:
       args: '@azure/static-web-apps-cli deploy ./dist -d
         ${{SECRET_TAB_SWA_DEPLOYMENT_TOKEN}} --env production'
+projectId: 47881792-967b-4b57-920c-cb3856631ba3

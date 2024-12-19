@@ -142,19 +142,25 @@ You can use the [Adaptive Card Designer](https://adaptivecards.io/designer/) to 
 
 ### Step 3: Handle the new action
 
-The TeamsFx SDK provides a convenient class, `TeamsFxAdaptiveCardActionHandler`, to handle when an action from an Adaptive Card is invoked. Create a new file, `src/cardActions/doSomethingActionHandler.ts`:
+Create a new file, `src/cardActions/doSomethingActionHandler.ts`:
 
 ```typescript
-const { AdaptiveCards } = require("@microsoft/adaptivecards-tools");
-const { AdaptiveCardResponse, InvokeResponseFactory } = require("@microsoft/teamsfx");
-const responseCard = require("../adaptiveCards/doSomethingResponse.json");
+import { AdaptiveCard } from "@microsoft/teams-ai";
+import * as ACData from "adaptivecards-templating";
+import { TurnContext } from "botbuilder";
+import responseCard from "../adaptiveCards/doSomethingResponse.json";
 
 export class DoSomethingActionHandler {
   triggerVerb = "doSomething";
 
-  async handleActionInvoked(context, message) {
-    const responseCardJson = AdaptiveCards.declare(responseCard).render(actionData);
-    return InvokeResponseFactory.adaptiveCard(responseCardJson);
+  async handleActionInvoked(context: TurnContext, actionData: any): Promise<string | AdaptiveCard> {
+    const cardJson = new ACData.Template(responseCard).expand({
+      $root: {
+        title: "doSomething command is added",
+        body: "Congratulations! You have responded to doSomething command",
+      },
+    });
+    return cardJson as AdaptiveCard;
   }
 }
 ```
@@ -171,25 +177,16 @@ You can customize what the action does here, including calling an API, processin
 
 ### Step 4: Register the new handler
 
-Each new card action needs to be configured in the `ConversationBot`, which powers the conversational flow of the workflow bot template. Navigate to the `src/internal/initialize.ts` file and update the `actions` array of the `cardAction` property.
-
-1. Go to `src/internal/initialize.ts`;
-2. Update your `conversationBot` initialization to enable cardAction feature and add the handler to `actions` array:
+Navigate to the `src/index.ts` file and register the trigger pattern to `app.adaptiveCards.actionExecute()`:
 
 ```typescript
-import { BotBuilderCloudAdapter } from "@microsoft/teamsfx";
-import ConversationBot = BotBuilderCloudAdapter.ConversationBot;
-
-const conversationBot = new ConversationBot({
-  ...
-  cardAction: {
-    enabled: true,
-    actions: [
-      new DoStuffActionHandler(),
-      new DoSomethingActionHandler()
-    ],
+const doSomethingActionHandler = new DoSomethingActionHandler();
+app.adaptiveCards.actionExecute(
+  doSomethingActionHandler.triggerVerb,
+  async (context: TurnContext, state, data) => {
+    return await doSomethingActionHandler.handleActionInvoked(context, data);
   }
-});
+);
 ```
 
 Congratulations, you've just created your own workflow! To learn more about extending the Workflow bot template, [visit the documentation on GitHub](https://aka.ms/teamsfx-workflow-new). You can find more scenarios like:

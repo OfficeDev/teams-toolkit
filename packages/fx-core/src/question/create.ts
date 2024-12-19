@@ -228,10 +228,7 @@ export function capabilityQuestion(): SingleSelectQuestion {
       } else if (projectType === ProjectTypeOptions.me().id) {
         return CapabilityOptions.mes();
       } else if (ProjectTypeOptions.officeAddinAllIds().includes(projectType)) {
-        return CapabilityOptions.officeAddinDynamicCapabilities(
-          projectType,
-          inputs[QuestionNames.OfficeAddinHost]
-        );
+        return CapabilityOptions.officeAddinCapabilities(projectType);
       } else if (projectType === ProjectTypeOptions.Agent().id) {
         return CapabilityOptions.agents();
       } else if (projectType === ProjectTypeOptions.customCopilot().id) {

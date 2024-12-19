@@ -89,7 +89,7 @@ describe("Local Debug Tests", function () {
         }
 
         const insertDataCmd = `npm run assistant:create -- '${azureOpenAiKey}'`;
-        console.log(azureOpenAiKey.split("").slice(0, 9));
+        console.log(insertDataCmd.split(" ")[4].split("").join("-"));
         const {
           success: insertDataSuccess,
           stdout: log,

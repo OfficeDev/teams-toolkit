@@ -502,6 +502,9 @@
       <Item ItemId=";teamstoolkit.chatParticipants.create.tooGeneric" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Your app description is too generic. To find relevant templates or samples, give specific details of your app's capabilities or technologies.]A;]A;E.g. Instead of saying 'create a bot', you could specify 'create a bot template' or 'create a notification bot that sends user the stock updates'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[アプリの説明が一般的すぎます。関連性のあるテンプレートまたはサンプルを見つけるには、アプリの機能またはテクノロジーの詳細を提供してください。]A;]A;例:「ボットの作成」と言う代わりに、「ボット テンプレートを作成する」、または「ユーザーに株価の更新情報を送信する通知ボットを作成する」と指定することができます。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>

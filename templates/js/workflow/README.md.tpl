@@ -144,19 +144,23 @@ You can use the [Adaptive Card Designer](https://adaptivecards.io/designer/) to 
 
 ### Step 3: Handle the new action
 
-The TeamsFx SDK provides a convenient class, `TeamsFxAdaptiveCardActionHandler`, to handle when an action from an Adaptive Card is invoked. Create a new file, `src/cardActions/doSomethingActionHandler.js`:
+Create a new file, `src/cardActions/doSomethingActionHandler.js`:
 
 ```javascript
-const { AdaptiveCards } = require("@microsoft/adaptivecards-tools");
-const { AdaptiveCardResponse, InvokeResponseFactory } = require("@microsoft/teamsfx");
+const ACData = require("adaptivecards-templating");
 const responseCard = require("../adaptiveCards/doSomethingResponse.json");
 
 class DoSomethingActionHandler {
   triggerVerb = "doSomething";
 
   async handleActionInvoked(context, message) {
-    const responseCardJson = AdaptiveCards.declare(responseCard).render(actionData);
-    return InvokeResponseFactory.adaptiveCard(responseCardJson);
+    const cardJson = new ACData.Template(responseCard).expand({
+      $root: {
+        title: "doSomething command is added",
+        body: "Congratulations! You have responded to doSomething command",
+      },
+    });
+    return cardJson;
   }
 }
 
@@ -177,24 +181,12 @@ You can customize what the action does here, including calling an API, processin
 
 ### Step 4: Register the new handler
 
-Each new card action needs to be configured in the `ConversationBot`, which powers the conversational flow of the workflow bot template. Navigate to the `src/internal/initialize.js` file and update the `actions` array of the `cardAction` property.
-
-1. Go to `src/internal/initialize.js`;
-2. Update your `conversationBot` initialization to enable cardAction feature and add the handler to `actions` array:
+Navigate to the `src/index.js` file and register the trigger pattern to `app.adaptiveCards.actionExecute()`:
 
 ```javascript
-const { BotBuilderCloudAdapter } = require("@microsoft/teamsfx");
-const ConversationBot = BotBuilderCloudAdapter.ConversationBot;
-
-const conversationBot = new ConversationBot({
-  ...
-  cardAction: {
-    enabled: true,
-    actions: [
-      new DoStuffActionHandler(),
-      new DoSomethingActionHandler()
-    ],
-  }
+const doSomethingActionHandler = new DoSomethingActionHandler();
+app.adaptiveCards.actionExecute(doSomethingActionHandler.triggerVerb, async (context, state, data) => {
+  return await doSomethingActionHandler.handleActionInvoked(context, data);
 });
 ```
 

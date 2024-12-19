@@ -106,6 +106,8 @@ export enum QuestionNames {
   ImportPlugin = "import-plugin",
   PluginManifestFilePath = "plugin-manifest-path",
   PluginOpenApiSpecFilePath = "plugin-opeanapi-spec-path",
+
+  TemplateName = "template-name",
 }
 
 export enum ProjectTypeGroup {
@@ -252,21 +254,9 @@ export class ProjectTypeOptions {
     };
   }
 
-  static officeAddin(platform?: Platform): OptionItem {
-    return {
-      id: "office-addin-type",
-      label: `${platform === Platform.VSCode ? "$(extensions) " : ""}${getLocalizedString(
-        "core.createProjectQuestion.projectType.officeAddin.label"
-      )}`,
-      detail: getLocalizedString("core.createProjectQuestion.projectType.officeAddin.detail"),
-      groupName: ProjectTypeOptions.getCreateGroupName(ProjectTypeGroup.M365Apps),
-    };
-  }
-
   static officeAddinAllIds(platform?: Platform): string[] {
     return [
       ProjectTypeOptions.officeMetaOS(platform).id,
-      ProjectTypeOptions.officeAddin(platform).id,
       ProjectTypeOptions.outlookAddin(platform).id,
     ];
   }
@@ -579,43 +569,14 @@ export class CapabilityOptions {
     return items;
   }
 
-  static officeAddinDynamicCapabilities(projectType: string, host?: string): OptionItem[] {
-    const items: OptionItem[] = [];
+  static officeAddinCapabilities(projectType: string): OptionItem[] {
+    const items: OptionItem[] = [CapabilityOptions.officeAddinTaskpane()];
     const isOutlookAddin = projectType === ProjectTypeOptions.outlookAddin().id;
     const isMetaOSAddin = projectType === ProjectTypeOptions.officeMetaOS().id;
-    const isOfficeAddin = projectType === ProjectTypeOptions.officeAddin().id;
-
-    const pushToItems = (option: any) => {
-      const capabilityValue = OfficeAddinProjectConfig.json[option];
-      items.push({
-        id: option,
-        label: getLocalizedString(capabilityValue.title),
-        detail: getLocalizedString(capabilityValue.detail),
-      });
-    };
-
-    if (isOutlookAddin || isMetaOSAddin || isOfficeAddin) {
-      pushToItems("json-taskpane");
-      if (isOutlookAddin) {
-        items.push(CapabilityOptions.outlookAddinImport());
-      } else if (isMetaOSAddin) {
-        items.push(CapabilityOptions.officeAddinImport());
-      } else {
-        items.push(CapabilityOptions.officeContentAddin());
-        items.push(CapabilityOptions.officeAddinImport());
-      }
-    } else {
-      if (host) {
-        const hostValue = OfficeAddinProjectConfig[host];
-        for (const capability of Object.keys(hostValue)) {
-          const capabilityValue = hostValue[capability];
-          items.push({
-            id: capability,
-            label: getLocalizedString(capabilityValue.title),
-            detail: getLocalizedString(capabilityValue.detail),
-          });
-        }
-      }
+    if (isOutlookAddin) {
+      items.push(CapabilityOptions.outlookAddinImport());
+    } else if (isMetaOSAddin) {
+      items.push(CapabilityOptions.officeAddinImport());
     }
     return items;
   }
@@ -676,10 +637,16 @@ export class CapabilityOptions {
       // test templates that are used by TDP integration only
       capabilityOptions.push(...CapabilityOptions.tdpIntegrationCapabilities());
     }
-    capabilityOptions.push(
-      ...CapabilityOptions.officeAddinDynamicCapabilities(inputs?.projectType, inputs?.host)
-    );
+    capabilityOptions.push(...CapabilityOptions.officeAddinCapabilities(inputs?.projectType));
     return capabilityOptions;
+  }
+
+  static officeAddinTaskpane(): OptionItem {
+    return {
+      id: "office-addin-taskpane",
+      label: getLocalizedString("core.newTaskpaneAddin.label"),
+      detail: getLocalizedString("core.newTaskpaneAddin.detail"),
+    };
   }
 
   static outlookAddinImport(): OptionItem {
@@ -925,9 +892,9 @@ export const NotificationTriggers = {
   TIMER: "timer",
 } as const;
 
-type NotificationTrigger = typeof NotificationTriggers[keyof typeof NotificationTriggers];
+export type NotificationTrigger = typeof NotificationTriggers[keyof typeof NotificationTriggers];
 
-interface HostTypeTriggerOptionItem extends OptionItem {
+export interface HostTypeTriggerOptionItem extends OptionItem {
   hostType: HostType;
   triggers?: NotificationTrigger[];
 }

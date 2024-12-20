@@ -399,9 +399,9 @@ export class AadManifestHelper {
       if (await fs.pathExists(ymlPath)) {
         const ymlContent = await fs.readFile(ymlPath, "utf-8");
         const document = parseDocument(ymlContent);
-        const versionNode = document.get("version") as any;
-        if (versionNode.value <= "v1.7") {
-          document.set("version", "1.8");
+        const version = document.get("version") as string;
+        if (version <= "v1.7") {
+          document.set("version", "v1.8");
         }
         await fs.writeFile(ymlPath, document.toString(), "utf8");
       }

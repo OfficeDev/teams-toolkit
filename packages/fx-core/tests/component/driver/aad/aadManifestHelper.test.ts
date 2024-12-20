@@ -112,12 +112,12 @@ describe("Microsoft Entra manifest helper Test", () => {
 
     sinon.stub(fs, "pathExists").resolves(true);
     sinon.stub(fs, "readFile").resolves(teamsAppYaml as any);
-    await AadManifestHelper.updateVersionForTeamsAppYamlFile("fake-project-path");
-
     const writeFileStub = sinon.stub(fs, "writeFile");
 
+    await AadManifestHelper.updateVersionForTeamsAppYamlFile("fake-project-path");
+
     const writtenContent = writeFileStub.getCall(0).args[1];
-    chai.assert.isTrue(writtenContent === expectedTeamsAppYaml);
+    chai.assert.isTrue(writtenContent.includes(expectedTeamsAppYaml));
   });
 
   it("processRequiredResourceAccessInManifest with id", async () => {

@@ -5,7 +5,11 @@
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
 import * as path from "path";
-import { startDebugging, waitForTerminal } from "../../utils/vscodeOperation";
+import {
+  createEnvironmentWithPython,
+  startDebugging,
+  waitForTerminal,
+} from "../../utils/vscodeOperation";
 import {
   initPage,
   validateWelcomeAndReplyBot,
@@ -16,16 +20,12 @@ import {
   LocalDebugTaskLabel,
   DebugItemSelect,
   ValidationContent,
+  LocalDebugTaskLabel2,
 } from "../../utils/constants";
 import { Env, OpenAiKey } from "../../utils/env";
 import { it } from "../../utils/it";
-import {
-  editDotEnvFile,
-  validateFileExist,
-  modifyFileContext,
-} from "../../utils/commonUtils";
+import { editDotEnvFile, validateFileExist } from "../../utils/commonUtils";
 import { Executor } from "../../utils/executor";
-import os from "os";
 
 describe("Local Debug Tests", function () {
   this.timeout(Timeout.testCase);
@@ -35,7 +35,7 @@ describe("Local Debug Tests", function () {
     // ensure workbench is ready
     this.timeout(Timeout.prepareTestCase);
     localDebugTestContext = new LocalDebugTestContext("aiagent", {
-      lang: "typescript",
+      lang: "python",
       customCeopilotAgent: "custom-copilot-agent-assistants-api",
       llmServiceType: "llm-service-azure-openai",
     });
@@ -48,9 +48,9 @@ describe("Local Debug Tests", function () {
   });
 
   it(
-    "[auto][Typescript][Azure OpenAI]Local debug for AI Agent - Build with Assistants API",
+    "[auto][Python][Azure OpenAI] Local debug for AI Agent - Build with Assistants API",
     {
-      testPlanCaseId: 30570676,
+      testPlanCaseId: 28957868,
       author: "v-ivanchen@microsoft.com",
     },
     async function () {
@@ -58,7 +58,9 @@ describe("Local Debug Tests", function () {
         localDebugTestContext.testRootFolder,
         localDebugTestContext.appName
       );
-      validateFileExist(projectPath, "src/index.ts");
+      validateFileExist(projectPath, "src/app.py");
+      await createEnvironmentWithPython();
+
       const envPath = path.resolve(projectPath, "env", ".env.local.user");
       const isRealKey = OpenAiKey.azureOpenAiKey ? true : false;
       const azureOpenAiKey = OpenAiKey.azureOpenAiKey
@@ -78,38 +80,11 @@ describe("Local Debug Tests", function () {
         "AZURE_OPENAI_MODEL_DEPLOYMENT_NAME",
         azureOpenAiModelDeploymentName
       );
-      const creatorFile = path.resolve(projectPath, "src", "creator.ts");
-      modifyFileContext(
-        creatorFile,
-        'const azureOpenAIEndpoint="";',
-        `const azureOpenAIEndpoint="${azureOpenAiEndpoint}";`
-      );
-      modifyFileContext(
-        creatorFile,
-        'const azureOpenAIDeploymentName="";',
-        `const azureOpenAIDeploymentName="${azureOpenAiModelDeploymentName}";`
-      );
 
       if (isRealKey) {
         console.log("Start to create azure assistant id");
-        const installCmd = `npm install`;
-        const { success } = await Executor.execute(
-          installCmd,
-          projectPath,
-          process.env,
-          undefined,
-          "npm warn"
-        );
-        if (!success) {
-          throw new Error("Failed to install packages");
-        }
 
-        let insertDataCmd = "";
-        if (os.type() === "Windows_NT") {
-          insertDataCmd = `npm run assistant:create -- ${azureOpenAiKey}`;
-        } else {
-          insertDataCmd = `npm run assistant:create -- '${azureOpenAiKey}'`;
-        }
+        const insertDataCmd = `python src/utils/creator.py --api-key ${azureOpenAiKey}`;
         const { success: insertDataSuccess, stdout: log } =
           await Executor.execute(insertDataCmd, projectPath);
         // get assistant id from log string
@@ -127,7 +102,10 @@ describe("Local Debug Tests", function () {
       await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
 
       await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
-      await waitForTerminal(LocalDebugTaskLabel.StartBotApp, "Bot Started");
+      await waitForTerminal(
+        LocalDebugTaskLabel2.PythonDebugConsole,
+        "Running on http://localhost:3978"
+      );
 
       const teamsAppId = await localDebugTestContext.getTeamsAppId();
       const page = await initPage(

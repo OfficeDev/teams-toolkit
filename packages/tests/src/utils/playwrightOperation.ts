@@ -224,15 +224,13 @@ export async function initPage(
       );
     }
     await page.waitForTimeout(Timeout.shortTimeLoading);
-    try {
-      const openApp = await page?.waitForSelector(
-        "button[data-testid='open-app'][data-tid='open-app']"
-      );
-      console.log("clicked open app");
-      await openApp.click();
-    } catch {
-      console.log("No Open App button");
-    }
+
+    const openApp = await page?.waitForSelector(
+      "button[data-testid='open-app'][data-tid='open-app']"
+    );
+    console.log("clicked open app");
+    await openApp.click();
+
     console.log("[success] app loaded");
   });
 

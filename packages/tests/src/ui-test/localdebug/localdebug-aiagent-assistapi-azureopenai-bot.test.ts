@@ -91,7 +91,7 @@ describe("Local Debug Tests", function () {
       );
 
       if (isRealKey) {
-        console.log("Start to create azure search data");
+        console.log("Start to create azure assistant id");
         const installCmd = `npm install`;
         const { success } = await Executor.execute(
           installCmd,

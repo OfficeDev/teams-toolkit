@@ -5,61 +5,76 @@
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
 import * as path from "path";
-import { startDebugging, waitForTerminal } from "../../utils/vscodeOperation";
+import { VSBrowser } from "vscode-extension-tester";
+import { Timeout, ValidationContent } from "../../utils/constants";
+import {
+  RemoteDebugTestContext,
+  deployProject,
+  provisionProject,
+} from "./remotedebugContext";
+import {
+  execCommandIfExist,
+  createNewProject,
+} from "../../utils/vscodeOperation";
 import {
   initPage,
   validateWelcomeAndReplyBot,
 } from "../../utils/playwrightOperation";
-import { LocalDebugTestContext } from "./localdebugContext";
-import {
-  Timeout,
-  LocalDebugTaskLabel,
-  DebugItemSelect,
-  ValidationContent,
-} from "../../utils/constants";
 import { Env, OpenAiKey } from "../../utils/env";
 import { it } from "../../utils/it";
-import {
-  editDotEnvFile,
-  validateFileExist,
-  modifyFileContext,
-} from "../../utils/commonUtils";
+import { editDotEnvFile, validateFileExist } from "../../utils/commonUtils";
 import { Executor } from "../../utils/executor";
-import os from "os";
 
-describe("Local Debug Tests", function () {
-  this.timeout(Timeout.testCase);
-  let localDebugTestContext: LocalDebugTestContext;
+describe("Remote debug Tests", function () {
+  this.timeout(Timeout.testAzureCase);
+  let remoteDebugTestContext: RemoteDebugTestContext;
+  let testRootFolder: string;
+  let appName: string;
+  const appNameCopySuffix = "copy";
+  let newAppFolderName: string;
+  let projectPath: string;
 
   beforeEach(async function () {
     // ensure workbench is ready
     this.timeout(Timeout.prepareTestCase);
-    localDebugTestContext = new LocalDebugTestContext("aiagent", {
-      lang: "typescript",
-      customCeopilotAgent: "custom-copilot-agent-assistants-api",
-      llmServiceType: "llm-service-azure-openai",
-    });
-    await localDebugTestContext.before();
+    remoteDebugTestContext = new RemoteDebugTestContext("aiagent");
+    testRootFolder = remoteDebugTestContext.testRootFolder;
+    appName = remoteDebugTestContext.appName;
+    newAppFolderName = appName + appNameCopySuffix;
+    projectPath = path.resolve(testRootFolder, newAppFolderName);
+    await remoteDebugTestContext.before();
   });
 
   afterEach(async function () {
-    this.timeout(Timeout.finishTestCase);
-    await localDebugTestContext.after(false, true);
+    this.timeout(Timeout.finishAzureTestCase);
+    await remoteDebugTestContext.after();
+
+    //Close the folder and cleanup local sample project
+    await execCommandIfExist("Workspaces: Close Workspace", Timeout.webView);
+    console.log(`[Successfully] start to clean up for ${projectPath}`);
+    await remoteDebugTestContext.cleanUp(
+      appName,
+      projectPath,
+      false,
+      true,
+      false
+    );
   });
 
   it(
-    "[auto][Typescript][Azure OpenAI]Local debug for AI Agent - Build with Assistants API",
+    "[auto][Python][Azure OpenAI] Remote debug for AI Agent - Build with Assistants API",
     {
-      testPlanCaseId: 30570676,
+      testPlanCaseId: 28957869,
       author: "v-ivanchen@microsoft.com",
     },
     async function () {
-      const projectPath = path.resolve(
-        localDebugTestContext.testRootFolder,
-        localDebugTestContext.appName
-      );
-      validateFileExist(projectPath, "src/index.ts");
-      const envPath = path.resolve(projectPath, "env", ".env.local.user");
+      const driver = VSBrowser.instance.driver;
+      await createNewProject("aiagentassist", appName, {
+        lang: "Python",
+        aiType: "Azure OpenAI",
+      });
+      validateFileExist(projectPath, "src/app.py");
+      const envPath = path.resolve(projectPath, "env", ".env.dev.user");
       const isRealKey = OpenAiKey.azureOpenAiKey ? true : false;
       const azureOpenAiKey = OpenAiKey.azureOpenAiKey
         ? OpenAiKey.azureOpenAiKey
@@ -78,38 +93,11 @@ describe("Local Debug Tests", function () {
         "AZURE_OPENAI_MODEL_DEPLOYMENT_NAME",
         azureOpenAiModelDeploymentName
       );
-      const creatorFile = path.resolve(projectPath, "src", "creator.ts");
-      modifyFileContext(
-        creatorFile,
-        'const azureOpenAIEndpoint="";',
-        `const azureOpenAIEndpoint="${azureOpenAiEndpoint}";`
-      );
-      modifyFileContext(
-        creatorFile,
-        'const azureOpenAIDeploymentName="";',
-        `const azureOpenAIDeploymentName="${azureOpenAiModelDeploymentName}";`
-      );
 
       if (isRealKey) {
         console.log("Start to create azure assistant id");
-        const installCmd = `npm install`;
-        const { success } = await Executor.execute(
-          installCmd,
-          projectPath,
-          process.env,
-          undefined,
-          "npm warn"
-        );
-        if (!success) {
-          throw new Error("Failed to install packages");
-        }
 
-        let insertDataCmd = "";
-        if (os.type() === "Windows_NT") {
-          insertDataCmd = `npm run assistant:create -- ${azureOpenAiKey}`;
-        } else {
-          insertDataCmd = `npm run assistant:create -- '${azureOpenAiKey}'`;
-        }
+        const insertDataCmd = `python src/utils/creator.py --api-key ${azureOpenAiKey}`;
         const { success: insertDataSuccess, stdout: log } =
           await Executor.execute(insertDataCmd, projectPath);
         // get assistant id from log string
@@ -124,19 +112,18 @@ describe("Local Debug Tests", function () {
         editDotEnvFile(envPath, "AZURE_OPENAI_ASSISTANT_ID", "fake");
       }
 
-      await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
-
-      await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
-      await waitForTerminal(LocalDebugTaskLabel.StartBotApp, "Bot Started");
-
-      const teamsAppId = await localDebugTestContext.getTeamsAppId();
+      await provisionProject(appName, projectPath);
+      await deployProject(projectPath, Timeout.botDeploy);
+      const teamsAppId = await remoteDebugTestContext.getTeamsAppId(
+        projectPath
+      );
       const page = await initPage(
-        localDebugTestContext.context!,
+        remoteDebugTestContext.context!,
         teamsAppId,
         Env.username,
         Env.password
       );
-      await localDebugTestContext.validateLocalStateForBot();
+      await driver.sleep(Timeout.longTimeWait);
       if (isRealKey) {
         await validateWelcomeAndReplyBot(page, {
           hasWelcomeMessage: false,

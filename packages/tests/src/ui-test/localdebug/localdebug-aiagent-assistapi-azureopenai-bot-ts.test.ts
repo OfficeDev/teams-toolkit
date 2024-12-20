@@ -88,14 +88,14 @@ describe("Local Debug Tests", function () {
           throw new Error("Failed to install packages");
         }
 
-        const insertDataCmd = `npm run assistant:create -- ${azureOpenAiKey}`;
+        const insertDataCmd = `npm run assistant:create -- 'sddcff4r432'`;
         const {
           success: insertDataSuccess,
           stdout: log,
           stderr: errlog,
         } = await Executor.execute(insertDataCmd, projectPath);
-        console.log(log);
-        console.log(errlog);
+        console.log("log", log);
+        console.log("errlog", errlog);
         if (!insertDataSuccess) {
           throw new Error("Failed to create assistant");
         }

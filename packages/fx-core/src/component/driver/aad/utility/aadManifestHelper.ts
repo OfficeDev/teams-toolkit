@@ -20,6 +20,10 @@ import { getLocalizedString } from "../../../../common/localizeUtils";
 import { err, FxError, ok, Result } from "@microsoft/teamsfx-api";
 import { FileNotFoundError, UserCancelError } from "../../../../error";
 import fs from "fs-extra";
+import { pathUtils } from "../../../utils/pathUtils";
+import { parseDocument } from "yaml";
+import { MetadataV3 } from "../../../../common/versionMetadata";
+import path from "path";
 
 const componentName = "AadManifestHelper";
 
@@ -315,7 +319,10 @@ export class AadManifestHelper {
     return "displayName" in manifest;
   }
 
-  public static async showWarningIfManifestIsOutdated(manifestTemplatePath: string): Promise<void> {
+  public static async showWarningIfManifestIsOutdated(
+    manifestTemplatePath: string,
+    projectPath: string
+  ): Promise<void> {
     const manifest = await fs.readJson(manifestTemplatePath);
     if (!AadManifestHelper.isNewAADManifestSchema(manifest)) {
       void TOOLS.ui
@@ -330,14 +337,18 @@ export class AadManifestHelper {
             result.isOk() &&
             result.value === getLocalizedString("core.convertAadToNewSchema.upgrade")
           ) {
-            void AadManifestHelper.convertManifestToNewSchemaAndOverride(manifestTemplatePath);
+            void AadManifestHelper.convertManifestToNewSchemaAndOverride(
+              manifestTemplatePath,
+              projectPath
+            );
           }
         });
     }
   }
 
   public static async convertManifestToNewSchemaAndOverride(
-    manifestTemplatePath: string
+    manifestTemplatePath: string,
+    projectPath: string
   ): Promise<Result<undefined, FxError>> {
     if (!(await fs.pathExists(manifestTemplatePath))) {
       return err(new FileNotFoundError("convertAadToNewSchema", manifestTemplatePath));
@@ -374,6 +385,27 @@ export class AadManifestHelper {
       false
     );
 
+    await AadManifestHelper.updateVersionForTeamsAppYamlFile(projectPath);
     return ok(undefined);
+  }
+
+  public static async updateVersionForTeamsAppYamlFile(projectPath: string): Promise<void> {
+    const allPossilbeYamlFileNames = [
+      MetadataV3.localConfigFile,
+      MetadataV3.configFile,
+      MetadataV3.testToolConfigFile,
+    ];
+    for (const yamlFileName of allPossilbeYamlFileNames) {
+      const ymlPath = path.join(projectPath, yamlFileName);
+      if (await fs.pathExists(ymlPath)) {
+        const ymlContent = await fs.readFile(ymlPath, "utf-8");
+        const document = parseDocument(ymlContent);
+        const versionNode = document.get("version") as any;
+        if (versionNode.value <= "v1.7") {
+          document.set("version", "1.8");
+        }
+        await fs.writeFile(ymlPath, document.toString(), "utf8");
+      }
+    }
   }
 }

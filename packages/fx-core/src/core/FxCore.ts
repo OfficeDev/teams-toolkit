@@ -844,7 +844,11 @@ export class FxCore {
   ])
   async convertAadToNewSchema(inputs: Inputs): Promise<Result<undefined, FxError>> {
     const manifestTemplatePath: string = inputs[QuestionNames.AadAppManifestFilePath];
-    return AadManifestHelper.convertManifestToNewSchemaAndOverride(manifestTemplatePath);
+    const projectPath = inputs[QuestionNames.ProjectPath] as string;
+    return AadManifestHelper.convertManifestToNewSchemaAndOverride(
+      manifestTemplatePath,
+      projectPath
+    );
   }
 
   /**

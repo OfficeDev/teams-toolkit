@@ -87,7 +87,7 @@ export class UpdateAadAppDriver implements StepDriver {
       const manifestPath = path.isAbsolute(args.manifestPath)
         ? args.manifestPath
         : path.join(context.projectPath, args.manifestPath);
-      void AadManifestHelper.showWarningIfManifestIsOutdated(manifestPath);
+      void AadManifestHelper.showWarningIfManifestIsOutdated(manifestPath, context.projectPath);
 
       return {
         result: ok(

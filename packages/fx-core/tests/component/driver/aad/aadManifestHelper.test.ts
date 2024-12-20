@@ -94,7 +94,7 @@ describe("Microsoft Entra manifest helper Test", () => {
     const convertManifestToNewSchemaAndOverrideStub = sinon
       .stub(AadManifestHelper, "convertManifestToNewSchemaAndOverride")
       .resolves();
-    await AadManifestHelper.showWarningIfManifestIsOutdated("fake-path");
+    await AadManifestHelper.showWarningIfManifestIsOutdated("fake-path", "fake-project-path");
   });
 
   it("showWarningIfManifestIsOutdated should work if user cancel", async () => {
@@ -103,7 +103,21 @@ describe("Microsoft Entra manifest helper Test", () => {
     const convertManifestToNewSchemaAndOverrideStub = sinon
       .stub(AadManifestHelper, "convertManifestToNewSchemaAndOverride")
       .resolves();
-    await AadManifestHelper.showWarningIfManifestIsOutdated("fake-path");
+    await AadManifestHelper.showWarningIfManifestIsOutdated("fake-path", "fake-project-path");
+  });
+
+  it("updateVersionForTeamsAppYamlFile should works fine", async () => {
+    const teamsAppYaml = "version: v1.7";
+    const expectedTeamsAppYaml = "version: v1.8";
+
+    sinon.stub(fs, "pathExists").resolves(true);
+    sinon.stub(fs, "readFile").resolves(teamsAppYaml as any);
+    await AadManifestHelper.updateVersionForTeamsAppYamlFile("fake-project-path");
+
+    const writeFileStub = sinon.stub(fs, "writeFile");
+
+    const writtenContent = writeFileStub.getCall(0).args[1];
+    chai.assert.isTrue(writtenContent === expectedTeamsAppYaml);
   });
 
   it("processRequiredResourceAccessInManifest with id", async () => {

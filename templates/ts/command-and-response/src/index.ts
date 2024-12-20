@@ -45,7 +45,7 @@ app.message(
 //
 // The Teams Toolkit bot registration configures the bot with `/api/messages` as the
 // Bot Framework endpoint. If you customize this route, update the Bot registration
-// in `templates/azure/provision/botservice.bicep`.
+// in `infra/botRegistration/azurebot.bicep`.
 expressApp.post("/api/messages", async (req, res) => {
   await adapter.process(req, res, async (context) => {
     await app.run(context);

@@ -19,7 +19,11 @@ import {
 } from "../../utils/constants";
 import { Env, OpenAiKey } from "../../utils/env";
 import { it } from "../../utils/it";
-import { editDotEnvFile, validateFileExist } from "../../utils/commonUtils";
+import {
+  editDotEnvFile,
+  validateFileExist,
+  modifyFileContext,
+} from "../../utils/commonUtils";
 import { Executor } from "../../utils/executor";
 
 describe("Local Debug Tests", function () {
@@ -73,6 +77,17 @@ describe("Local Debug Tests", function () {
         "AZURE_OPENAI_MODEL_DEPLOYMENT_NAME",
         azureOpenAiModelDeploymentName
       );
+      const creatorFile = path.resolve(projectPath, "src", "creator.ts");
+      modifyFileContext(
+        creatorFile,
+        'const azureOpenAIEndpoint="";',
+        `const azureOpenAIEndpoint="${azureOpenAiEndpoint}";`
+      );
+      modifyFileContext(
+        creatorFile,
+        'const azureOpenAIDeploymentName="";',
+        `const azureOpenAIDeploymentName="${azureOpenAiModelDeploymentName}";`
+      );
 
       if (isRealKey) {
         console.log("Start to create azure search data");
@@ -88,7 +103,7 @@ describe("Local Debug Tests", function () {
           throw new Error("Failed to install packages");
         }
 
-        const insertDataCmd = `node ./src/creator.js '${azureOpenAiKey}'`;
+        const insertDataCmd = `npm run assistant:create -- '${azureOpenAiKey}'`;
         const {
           success: insertDataSuccess,
           stdout: log,

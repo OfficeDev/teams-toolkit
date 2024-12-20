@@ -88,7 +88,7 @@ describe("Local Debug Tests", function () {
           throw new Error("Failed to install packages");
         }
 
-        const insertDataCmd = `npm run assistant:create -- ccvfgfdge234`;
+        const insertDataCmd = `npm run assistant:create   --     ${azureOpenAiKey}`;
         const {
           success: insertDataSuccess,
           stdout: log,

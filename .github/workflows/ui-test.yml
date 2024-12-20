@@ -238,6 +238,12 @@ jobs:
         with:
           ref: ${{ needs.setup.outputs.branch }}
 
+      - name: get vsix1(unix)
+        if: matrix.os != 'windows-latest'
+        working-directory: packages/tests
+        run: |
+          find . -type f -name "*.vsix"
+
       - name: Setup node
         uses: actions/setup-node@v3
         with:
@@ -335,16 +341,34 @@ jobs:
         run: |
           npx playwright install
 
+      - name: get vsix2(unix)
+        if: matrix.os != 'windows-latest'
+        working-directory: packages/tests
+        run: |
+          find . -type f -name "*.vsix"
+
       - name: Download TTK
         uses: actions/download-artifact@v4
         with:
           name: ttk
           path: ./packages/tests
 
+      - name: get vsix3(unix)
+        if: matrix.os != 'windows-latest'
+        working-directory: packages/tests
+        run: |
+          find . -type f -name "*.vsix"
+
       - name: Install teamsfx cli
         working-directory: packages/tests
         run: |
           npm install @microsoft/teamsapp-cli@${{ needs.setup.outputs.npm-tag }}
+
+      - name: get vsix4(unix)
+        if: matrix.os != 'windows-latest'
+        working-directory: packages/tests
+        run: |
+          find . -type f -name "*.vsix"
 
       - name: Download samples
         if: startsWith(matrix.test-case, 'sample-') && contains(matrix.test-case, 'proactive-message') == false && contains(matrix.test-case, 'reddit-link') == false && contains(matrix.test-case, 'chef-bot') == false && contains(matrix.test-case, 'food-catalog') == false && contains(matrix.test-case, 'outlook-signature') == false
@@ -353,6 +377,12 @@ jobs:
           repository: OfficeDev/TeamsFx-Samples
           ref: ${{ needs.setup.outputs.sample-ref }}
           path: ./packages/tests/resource
+
+      - name: get vsix5(unix)
+        if: matrix.os != 'windows-latest'
+        working-directory: packages/tests
+        run: |
+          find . -type f -name "*.vsix"
 
       - name: Download samples from another repo
         if: contains(matrix.test-case, 'proactive-message') || contains(matrix.test-case, 'reddit-link')
@@ -378,6 +408,12 @@ jobs:
           ref: main
           path: ./packages/tests/resource
 
+      - name: get vsix6(unix)
+        if: matrix.os != 'windows-latest'
+        working-directory: packages/tests
+        run: |
+          find . -type f -name "*.vsix"
+
       - name: Download samples outlook signature
         if: contains(matrix.test-case, 'outlook-signature')
         uses: actions/checkout@v3
@@ -385,6 +421,12 @@ jobs:
           repository: OfficeDev/Office-Add-in-samples
           ref: main
           path: ./packages/tests/resource
+
+      - name: get vsix7(unix)
+        if: matrix.os != 'windows-latest'
+        working-directory: packages/tests
+        run: |
+          find . -type f -name "*.vsix"
 
       - name: Get VSCode
         working-directory: packages/tests
@@ -406,10 +448,22 @@ jobs:
         run: |
           npm run build
 
+      - name: get vsix8(unix)
+        if: matrix.os != 'windows-latest'
+        working-directory: packages/tests
+        run: |
+          find . -type f -name "*.vsix"
+
       - name: Install python extension
         working-directory: packages/tests
         run: |
           npx extest install-from-marketplace --storage .test-resources --extensions_dir .test-resources --type stable ms-python.python
+
+      - name: get vsix9(unix)
+        if: matrix.os != 'windows-latest'
+        working-directory: packages/tests
+        run: |
+          find . -type f -name "*.vsix"
 
       - name: Install docker extension
         if: contains(matrix.test-case,  'docker')

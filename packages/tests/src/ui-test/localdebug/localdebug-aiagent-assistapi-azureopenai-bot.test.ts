@@ -88,7 +88,7 @@ describe("Local Debug Tests", function () {
           throw new Error("Failed to install packages");
         }
 
-        const insertDataCmd = `npm run assistant:create   --     ${azureOpenAiKey}`;
+        const insertDataCmd = `node ./src/creator.js ${azureOpenAiKey}`;
         const {
           success: insertDataSuccess,
           stdout: log,
@@ -96,14 +96,14 @@ describe("Local Debug Tests", function () {
         } = await Executor.execute(insertDataCmd, projectPath);
         console.log("log", log);
         console.log("errlog", errlog);
+        // get assistant id from log string
+        const assistantId = log.match(
+          /Created a new assistant with an ID of: (.*)/
+        )?.[1];
         if (!insertDataSuccess) {
           throw new Error("Failed to create assistant");
         }
-        editDotEnvFile(
-          envPath,
-          "AZURE_OPENAI_ASSISTANT_ID",
-          "azureOpenAiModelDeploymentName"
-        );
+        editDotEnvFile(envPath, "AZURE_OPENAI_ASSISTANT_ID", assistantId ?? "");
       } else {
         editDotEnvFile(envPath, "AZURE_OPENAI_ASSISTANT_ID", "fake");
       }

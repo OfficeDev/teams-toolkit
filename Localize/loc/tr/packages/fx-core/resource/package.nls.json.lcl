@@ -61,8 +61,8 @@
       <Item ItemId=";core.BotNewUIOption.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[A simple implementation of an echo bot that's ready for customization]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Özelleştirmeye hazır bir yankı botunun basit bir uygulaması]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Özelleştirilmeye hazır bir echo bota ilişkin basit uygulama]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[A simple implementation of an echo bot that's ready to customize]]></Val>
@@ -133,8 +133,8 @@
       <Item ItemId=";core.LinkUnfurlingOption.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Display information and actions when a URL is pasted into the text input field]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[İleti oluşturma alanına bir URL yapıştırıldığında bilgileri ve eylemleri görüntüle]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Metin giriş alanına URL yapıştırıldığında bilgi ve işlemleri gösterin]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Display information and actions when a URL is pasted into the compose message area]]></Val>
@@ -172,6 +172,9 @@
       <Item ItemId=";core.M365SearchAppOptionItem.copilot.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Display data directly in Teams chat, Outlook email, and Copilot response from search results]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Verileri doğrudan Teams sohbet, Outlook e-posta ve Copilot yanıtlarındaki arama sonuçlarında görüntüleyin]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -280,8 +283,8 @@
       <Item ItemId=";core.ProgrammingLanguageQuestion.placeholder" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Select a programming language]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Programlama dili seçin.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Programlama dili seçin]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Select a programming language.]]></Val>
@@ -331,7 +334,7 @@
       <Item ItemId=";core.QuestionAppName.validation.pathExist" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Path exists: %s. Select a different app name.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Yol mevcut: %s. Farklı bir uygulama adı seçin.]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -355,12 +358,18 @@
       <Item ItemId=";core.QuestionNewResourceGroupLocation.group.others" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Others]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Diğer]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.QuestionNewResourceGroupLocation.group.recommended" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Recommended]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Önerilen]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -394,8 +403,8 @@
       <Item ItemId=";core.QuestionNewResourceGroupName.validation" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The name can only contain alphanumeric characters or symbols ._-()]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Ad yalnızca alfasayısal karakterler veya ._-() sembollerini içerebilir]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[İsimde sadece alfasayısal karakterler veya ._-() simgeleri bulunabilir.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[The name can only contain alphanumeric characters or the symbols ._-()]]></Val>
@@ -502,8 +511,8 @@
       <Item ItemId=";core.ScratchOptionYes.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Use the Teams Toolkit to create a new Teams app.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Yeni bir uygulama oluşturmak için Teams Araç Seti'ni kullanın.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Yeni bir Teams uygulaması oluşturmak için Teams Araç Seti kullanın.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Use the Teams Toolkit to create a new Teams application.]]></Val>
@@ -664,8 +673,92 @@
       <Item ItemId=";core.aadAppQuestion.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Microsoft Entra app]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Azure Active Directory uygulaması]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Microsoft Entra uygulaması]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Azure Active Directory app]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.addApi.confirm" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams Toolkit will modify files in your "%s" folder based on the new OpenAPI document you provided. To avoid losing unexpected changes, back up your files or use git for change tracking before proceeding.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams Araç Seti, "%s" klasörünüzdeki dosyaları, girdiğiniz yeni OpenAPI belgesine göre değiştirir. Beklenmeyen değişiklikleri kaybetmemek için, devam etmeden önce dosyalarınızı yedekleyin veya değişiklik izleme için git kullanın.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.addApi.confirm.localTeamsYaml" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams Toolkit will modify files in your "%s" folder, "%s" and "%s" based on the new OpenAPI document you provided. To avoid losing unexpected changes, back up your files or use git for change tracking before proceeding.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams Araç Seti, "%s" klasörünüzdeki, "%s" "%s", girdiğiniz yeni OpenAPI belgesine göre değiştirir. Beklenmeyen değişiklikleri kaybetmemek için, devam etmeden önce dosyalarınızı yedekleyin veya değişiklik izleme için git kullanın.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.addApi.confirm.teamsYaml" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams Toolkit will modify files in your "%s" folder and "%s" based on the new OpenAPI document you provided. To avoid losing unexpected changes, back up your files or use git for change tracking before proceeding.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams Araç Seti, "%s" klasörünüzdeki dosyaları "%s" yeni OpenAPI belgesine göre değiştirir. Beklenmeyen değişiklikleri kaybetmemek için, devam etmeden önce dosyalarınızı yedekleyin veya değişiklik izleme için git kullanın.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.addApi.continue" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Add]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ekle]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.addPlugin.success" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[API plugin "%s" added to the project successfully. View plugin manifest in "%s".]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[API eklentisi "%s" projeye başarıyla eklendi. Eklenti bildirimini bu "%s".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.addPlugin.success.viewPluginManifest" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[View plugin manifest]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Eklenti bildirimini görüntüle]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.addPlugin.success.vsc" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[API plugin "%s" added to the project successfully.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[API eklentisi "%s" projeye başarıyla eklendi.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.addPlugin.warning.apiSpecVariables" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Environment variables "%s" found in API specification of the added plugin. Ensure the values are set in .env file or system environment variables.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Eklenen "%s" API belirtimsinde ortam değişkenleri bulunamadı. Değerlerin .env dosyası veya sistem ortam değişkensinde ayarlandığından emin olun.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.addPlugin.warning.manifestVariables" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Environment variables "%s" found in manifest of the added plugin. Ensure the values are set in .env file or system environment variables.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Eklenen "%s" bildiriminde ortam değişkenleri bulunamadı. Değerlerin .env dosyası veya sistem ortam değişkensinde ayarlandığından emin olun.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Azure Active Directory app]]></Val>
@@ -775,6 +868,9 @@
       <Item ItemId=";core.aiAssistantBotOption.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[A custom AI Agent bot in Teams using Teams AI library and OpenAI Assistants API]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams'de Teams AI kitaplığı ve OpenAI Assistants API kullanan özel AI aracısı botu]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -790,8 +886,8 @@
       <Item ItemId=";core.aiBotOption.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[A basic AI chat bot in Teams using Teams AI library]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Teams AI kitaplığını kullanan bir sohbet botu]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams AI kitaplığı kullanan ve Teams içinde basit AI sohbet botu]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[A chat bot using Teams AI library]]></Val>
@@ -1003,8 +1099,8 @@
       <Item ItemId=";core.collaboration.StartingListAllAadAppOwners" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[]A;Starting to list all Microsoft Entra app owners for environment: ]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[]A;Ortam için tüm Azure Active Directory uygulama sahiplerini listelemeye başlıyoruz: ]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[]A;Ortam için tüm Microsoft Entra uygulama sahipleri listelenmeye başlıyor: ]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[]A;Starting to list all Azure Active Directory app owners for environment: ]]></Val>
@@ -1153,8 +1249,8 @@
       <Item ItemId=";core.common.NoServerInformation" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[No server information is found in the OpenAPI description document.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[OpenAPI spesifikasyon dosyasında hiçbir sunucu bilgisi bulunamadı.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[OpenAPI açıklama belgesinde sunucu bilgisi bulunamadı.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[No server information is found in the OpenAPI specification file.]]></Val>
@@ -1330,6 +1426,9 @@
       <Item ItemId=";core.common.invalidReason.AuthTypeIsNotSupported" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[authorization type is not supported]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[kimlik doğrulaması türü desteklenmiyor]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1354,6 +1453,9 @@
       <Item ItemId=";core.common.invalidReason.MethodNotAllowed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[method not allowed]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[yönteme izin verilmiyor]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1387,6 +1489,9 @@
       <Item ItemId=";core.common.invalidReason.NoParameter" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[no parameter]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[parametre yok]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1438,6 +1543,9 @@
       <Item ItemId=";core.common.invalidReason.UrlPathNotExist" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[url path does not exist]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[url yolu mevcut değil]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1501,6 +1609,9 @@
       <Item ItemId=";core.copilotPlugin.api.noAuth" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[No authentication]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Kimlik doğrulaması yok]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1534,8 +1645,38 @@
       <Item ItemId=";core.copilotPlugin.scaffold.summary" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[We have detected the following issues for your OpenAPI description document:]A;%s]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[OpenAPI belirtim dosyanız için aşağıdaki sorunları algılamıyoruz:]A;%s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[OpenAPI açıklama belgenizde şu sorunlar algılandı:]A;%s]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[We have detected the following issues for your OpenAPI specification file:]A;%s]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.copilotPlugin.scaffold.summary.warning.api.optionalParametersOnly" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[There is no required parameter defined in API "%s". The first optional parameter is set as the parameter for command "%s".]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[API hizmetlerinde tanımlanmış gerekli parametre "%s". İlk isteğe bağlı parametre, komut dosyası için parametre "%s".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.copilotPlugin.scaffold.summary.warning.api.optionalParametersOnly.mitigation" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[ Mitigation: If "%s" is not what you need, edit the parameter of command "%s" in "%s". The parameter name should match what's defined in "%s".]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[ Risk Azaltma: "%s" gerekli değilse komut dosyası parametresini "%s" içinde "%s". Parametre adı, parametrede tanımlananla "%s".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.copilotPlugin.scaffold.summary.warning.generate.ac.failed" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to create the adaptive card for API '%s': %s. Mitigation: Not required but you can manually add it to the adaptiveCards folder.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[API hizmeti için uyarlamalı kart oluşturulamadı'%s': %s. Risk Azaltma: Gerekli değil, ancak bunu adaptiveCards klasörüne el ile  ekebilirsiniz.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[We have detected the following issues for your OpenAPI specification file:]A;%s]]></Val>
@@ -1627,8 +1768,8 @@
       <Item ItemId=";core.copilotPlugin.scaffold.summary.warning.swaggerVersion" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The OpenAPI description document is on Swagger version 2.0. Mitigation: Not required. The content has been converted to OpenAPI 3.0 and saved in "%s".]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[API belirtimi Swagger sürüm 2.0'dadır. Risk Azaltma: Gerekli değil. İçerik OpenAPI 3.0'a dönüştürülerek "%s" dosyasına kaydedildi.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[OpenAPI açıklama belgesi Swagger 2.0 sürümünde. Düşürme: gerekli değil. İçerik OpenAPI 3.0'a dönüştürülerek "%s" içine kaydedildi.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[The API specification is on Swagger version 2.0. Mitigation: Not required. The content has been converted to OpenAPI 3.0 and saved in "%s".]]></Val>
@@ -1684,8 +1825,8 @@
       <Item ItemId=";core.copilotPlugin.validate.apiSpec.summary" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Teams Toolkit has checked your OpenAPI description document:]A;]A;Summary:]A;%s.]A;%s]A;%s]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Teams Araç Seti API belirtiminizi kontrol etti:]A;]A;Özet:]A;%s.]A;%s]A;%s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams Araç Seti OpenAPI açıklama belgenizi denetledi:]A;]A;Özet:]A;%s.]A;%s]A;%s]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Teams Toolkit has checked your API spec:]A;]A;Summary:]A;%s.]A;%s]A;%s]]></Val>
@@ -1789,12 +1930,18 @@
       <Item ItemId=";core.createProjectQuestion.addApiPlugin.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Add API Plugin]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[API eklentisi ekleyin]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.createProjectQuestion.addExistingPlugin.apiSpec.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Import OpenAPI Description Document]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[OpenAPI Açıklama Belgesini içeri aktar]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1810,6 +1957,9 @@
       <Item ItemId=";core.createProjectQuestion.addExistingPlugin.pluginManifest.placeholder" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Select your plugin manifest file]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Eklenti manifest dosyanızı seçin]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1843,6 +1993,9 @@
       <Item ItemId=";core.createProjectQuestion.addPlugin.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Add action]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Eylem ekle]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1876,6 +2029,9 @@
       <Item ItemId=";core.createProjectQuestion.apiMessageExtensionAuth.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Authentication Type]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Kimlik Doğrulaması Türü]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1921,8 +2077,8 @@
       <Item ItemId=";core.createProjectQuestion.apiSpec.multipleValidationErrors.vscode.message" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Incompatible OpenAPI description document. Check [output panel]5D;(command:fx-extension.showOutputChannel) for details.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Geçersiz API belirtimi. Ayrıntılar için [çıkış panelini]5D;(command:fx-extension.showOutputChannel) kontrol edin.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Uyumsuz OpenAPI açıklama belgesi. Ayrıntılar için [çıkış panelini]5D;(command:fx-extension.showOutputChannel) inceleyin.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Invalid API specification. Check [output panel]5D;(command:fx-extension.showOutputChannel) for details.]]></Val>
@@ -1933,6 +2089,27 @@
       <Item ItemId=";core.createProjectQuestion.apiSpec.operation.apikey.placeholder" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[GET/POST methods with at most 5 required parameter and API key are listed]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[En az 5 zorunlu parametre ve API anahtarına sahip GET/POST yöntemleri listelenir]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Invalid API specification. Check [output panel]5D;(command:fx-extension.showOutputChannel) for details.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.createProjectQuestion.apiSpec.operation.apikey.placeholder" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[GET/POST methods with at most 5 required parameter and API key are listed]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.createProjectQuestion.apiSpec.operation.invalidMessage" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[%s API(s) selected. You can select at least one and at most %s APIs.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[%s API'ler seçildi. En az bir ve en fazla %s api'ler seçin.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2008,8 +2185,8 @@
       <Item ItemId=";core.createProjectQuestion.apiSpec.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[OpenAPI Description Document]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[OpenAPI Belirtimi]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[OpenAPI Açıklama Belgesi]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[OpenAPI Spec]]></Val>
@@ -2098,6 +2275,9 @@
       <Item ItemId=";core.createProjectQuestion.capability.customCopilotAssistant.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[AI Agent]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[AI Aracısı]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2131,6 +2311,9 @@
       <Item ItemId=";core.createProjectQuestion.capability.customCopilotAssistantNewOption.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Build from Scratch]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Sıfırdan başla]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2146,6 +2329,9 @@
       <Item ItemId=";core.createProjectQuestion.capability.customCopilotAssistantOption.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[AI Agent]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[AI Aracısı]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2188,36 +2374,54 @@
       <Item ItemId=";core.createProjectQuestion.capability.customCopilotRagAzureAISearchOption.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Load your data from Azure AI Search service]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure Yapay Zeka Arama hizmetinden kendi verilerinizi yükleyin]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.createProjectQuestion.capability.customCopilotRagAzureAISearchOption.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Azure AI Search]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure Yapay Zeka Arama]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.createProjectQuestion.capability.customCopilotRagCustomApiOption.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Load your data from custom APIs based on OpenAPI description document]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[OpenAPI açıklama belgesini temel alan özel API'lerden veri yükleyin]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.createProjectQuestion.capability.customCopilotRagCustomApiOption.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Custom API]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Özel API]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.createProjectQuestion.capability.customCopilotRagCustomizeOption.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Decide how to load your data]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Verilerinizi nasıl yükleyeceğinize karar verin]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.createProjectQuestion.capability.customCopilotRagCustomizeOption.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Customize]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Özelleştir]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2233,6 +2437,9 @@
       <Item ItemId=";core.createProjectQuestion.capability.customCopilotRagMicrosoft365Option.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Microsoft 365]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Microsoft 365]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2257,18 +2464,27 @@
       <Item ItemId=";core.createProjectQuestion.capability.customEngineAgent.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Works in Teams and Microsoft 365 Copilot]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams ve Microsoft 365 Copilot'ta çalışır]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.createProjectQuestion.capability.messageExtensionApiSpecOption.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Create a message extension from your existing API]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Mevcut API'nizden mesaj uzantısı oluşturun]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.createProjectQuestion.capability.messageExtensionNewApiOption.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Create a message extension with a new API from Azure Functions]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure İşlevleri'nden yeni bir API ile mesaj uzantısı oluşturun]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2332,6 +2548,9 @@
       <Item ItemId=";core.createProjectQuestion.llmService.azureOpenAIDeploymentName.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Azure OpenAI Deployment Name]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure OpenAI Dağıtım Adı]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2347,6 +2566,9 @@
       <Item ItemId=";core.createProjectQuestion.llmService.azureOpenAIEndpoint.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Azure OpenAI Endpoint]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure OpenAI Uç Noktası]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2362,6 +2584,9 @@
       <Item ItemId=";core.createProjectQuestion.llmService.azureOpenAIKey.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Azure OpenAI Key]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure OpenAI Anahtarı]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2377,6 +2602,9 @@
       <Item ItemId=";core.createProjectQuestion.llmService.openAIKey.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[OpenAI Key]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[OpenAI Anahtarı]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2394,6 +2622,78 @@
           <Val><![CDATA[Service for Large Language Model (LLM)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Büyük Dil Modeli Için Hizmet (LLM)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.createProjectQuestion.llmServiceAzureOpenAIOption.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Access powerful LLMs in OpenAI with Azure security and reliability]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure güvenliği ve güvenilirliği ile OpenAI'de güçlü LLM'lere erişin]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.createProjectQuestion.llmServiceAzureOpenAIOption.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Azure OpenAI]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure OpenAI]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.createProjectQuestion.llmServiceOpenAIOption.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Access LLMs developed by OpenAI]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[OpenAI tarafından geliştirilen Access LLM'leri]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.createProjectQuestion.llmServiceOpenAIOption.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[OpenAI]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[OpenAI]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.createProjectQuestion.meArchitecture.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Architecture of Search Based Message Extension]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Arama Tabanlı İleti Uzantısı Mimarisi]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.createProjectQuestion.noPlugin.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Create declarative agent only]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Yalnızca bildirim aracısını oluştur]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.createProjectQuestion.noPlugin.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No plugin]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Eklenti yok]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.createProjectQuestion.option.description.preview" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Preview]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Önizleme]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2482,7 +2782,7 @@
       <Item ItemId=";core.createProjectQuestion.option.description.worksInOutlookM365" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Works in Teams, Outlook, and the Microsoft 365 application]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Teams, Outlook ve Microsoft 365 uygulamasında çalışır]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -2521,6 +2821,15 @@
       <Item ItemId=";core.createProjectQuestion.projectType.copilotExtension.placeholder" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Select an option]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.createProjectQuestion.projectType.customCopilot.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[App Features Using Teams AI Library]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams AI Kitaplığını Kullanan Uygulama Özellikleri]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2563,8 +2872,8 @@
       <Item ItemId=";core.createProjectQuestion.projectType.copilotPlugin.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Create a plugin to extend Microsoft 365 Copilot using your APIs]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[API'lerinizi kullanarak Copilot'u genişletmek için bir eklenti oluşturun]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[API'lerinizi kullanarak Microsoft 365 Copilot'ı genişletmek için bir eklenti oluşturun]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Create a plugin to extend Copilot using your APIs]]></Val>
@@ -2575,8 +2884,8 @@
       <Item ItemId=";core.createProjectQuestion.projectType.copilotPlugin.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[API Plugin]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Copilot eklentisi]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[API Eklentisi]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Plugin for Copilot]]></Val>
@@ -2587,6 +2896,9 @@
       <Item ItemId=";core.createProjectQuestion.projectType.createGroup.aiAgent" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[AI Agent]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[AI Aracısı]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2620,6 +2932,9 @@
       <Item ItemId=";core.createProjectQuestion.projectType.customCopilot.placeholder" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Select an option]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Bir seçenek belirleyin]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2680,32 +2995,44 @@
       <Item ItemId=";core.createProjectQuestion.projectType.officeAddin.framework.placeholder" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Select a framework]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Çerçeve seçin]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.createProjectQuestion.projectType.officeAddin.framework.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Framework]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Çerçeve]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.createProjectQuestion.projectType.officeAddin.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Office Add-in]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Office Eklentisi]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.createProjectQuestion.projectType.officeAddin.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[App Features Using an Office Add-in]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Office Eklentisi Kullanarak Uygulama Özellikleri]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.createProjectQuestion.projectType.outlookAddin.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Customize the ribbon and Task Pane with your web content for seamless user experience]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Şeridi ve Görev Bölmesi'ni web içeriğinizle özelleştirin]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Sorunsuz bir kullanıcı deneyimi için şeridi ve görev bölmesini kendi web içeriklerinizle özelleştirin]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Customize the ribbon and Task Pane with your web content]]></Val>
@@ -2734,8 +3061,8 @@
       <Item ItemId=";core.createProjectQuestion.projectType.tab.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Embed your own web content in Teams, Outlook, and the Microsoft 365 application]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Teams, Outlook ve Micosoft 365 uygulamasına kendi web içeriğinizi ekleyin]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Kendi web içeriklerinizi Teams, Outlook ve Microsoft 365 uygulamasına ekleyin]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Embed your own web content in Teams, Outlook, and the Micosoft 365 app]]></Val>
@@ -2764,8 +3091,8 @@
       <Item ItemId=";core.deploy.aadManifestLearnMore" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[More info]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Daha fazla bilgi edinin]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Daha fazla bilgi]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Learn more]]></Val>
@@ -2812,8 +3139,8 @@
       <Item ItemId=";core.deploy.botTroubleShoot.learnMore" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[More info]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Daha fazla bilgi edinin]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Daha fazla bilgi]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Learn more]]></Val>
@@ -2929,6 +3256,9 @@
       <Item ItemId=";core.error.checkOutput.vsc" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Check [Output panel]5D;(command:fx-extension.showOutputChannel) for details.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ayrıntılar için [Çıkış paneline]5D;(command:fx-extension.showOutputChannel) başvurun.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2944,8 +3274,8 @@
       <Item ItemId=";core.generator.officeAddin.importProject.convertProject" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Converting project...]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Proje dönüştürülüyor]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Proje dönüştürülüyor...]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Converting project]]></Val>
@@ -2956,8 +3286,8 @@
       <Item ItemId=";core.generator.officeAddin.importProject.copyFiles" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Copying files...]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Dosyalar kopyalanıyor]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Dosyalar kopyalanıyor...]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Copying files]]></Val>
@@ -2968,8 +3298,8 @@
       <Item ItemId=";core.generator.officeAddin.importProject.updateManifest" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Modifying manifest...]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Manifest değiştiriliyor]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Derleme bildirimi değiştiriliyor...]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Modifying manifest]]></Val>
@@ -3067,8 +3397,8 @@
       <Item ItemId=";core.getUserEmailQuestion.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Add owner to Teams/Microsoft Entra app for the account under the same Microsoft 365 tenant (email)]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Aynı Microsoft 365 kiracısı altındaki hesap için Teams/AAD uygulamasına sahip ekleme (e-posta)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Hesabın Teams/Microsoft Entra uygulamasına aynı Microsoft 365 kiracısında olan sahip ekleyin (e-posta adresi)]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Add owner to Teams/AAD app for the account under the same Microsoft 365 tenant (email)]]></Val>
@@ -3079,8 +3409,8 @@
       <Item ItemId=";core.getUserEmailQuestion.validation1" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Enter email address]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[E-posta adresi null veya boş olamaz]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[E-posta adresi girin]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Email address cannot be null or empty]]></Val>
@@ -3091,8 +3421,8 @@
       <Item ItemId=";core.getUserEmailQuestion.validation2" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Change [UserName]5D; to the real user name]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Lütfen [UserName]5D; adını gerçek kullanıcı adına değiştirin]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[[UserName]5D; değerini gerçek kullanıcı adıyla değiştirin]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Please change [UserName]5D; to the real user name]]></Val>
@@ -3115,8 +3445,8 @@
       <Item ItemId=";core.importAddin.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Upgrade an add-in project to the latest app manifest and project structure]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Bir Eklenti projesini en son uygulama bildirimine ve proje yapısına yükseltin]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Bir eklenti projesini en yeni uygulama bildirimi ve proje yapısına yükseltin]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Upgrade an Add-ins project to the latest app manifest and project structure]]></Val>
@@ -3223,8 +3553,8 @@
       <Item ItemId=";core.migrationV3.notAllowedMigration" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Teams Toolkit's Pre-Release version supports new project configuration and is incompatible with previous versions. Try it by creating a new project or run "teamsapp upgrade" to upgrade your project first.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Teams Araç Seti'nin Yayın Öncesi sürümü yeni proje yapılandırmasını destekler ve önceki sürümlerle uyumsuzdur. Yeni bir proje oluşturarak deneyin veya önce projenizi yükseltmek için "teamsfx upgrade" komutunu çalıştırın.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams Araç Seti'nin Yayın Öncesi sürümü yeni proje yapılandırmasını destekler ve önceki sürümlerle uyumlu değildir. Yeni bir proje oluşturarak deneyin ya da önce projenizi yükseltmek için "teamsapp upgrade" komutunu çalıştırın.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Teams Toolkit's Pre-Release version supports new project configuration and is incompatible with previous versions. Try it by creating a new project or run "teamsfx upgrade" to upgrade your project first.]]></Val>
@@ -3235,8 +3565,8 @@
       <Item ItemId=";core.newTaskpaneAddin.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Customize the ribbon with a button and embed content in the task pane]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Şeridi bir düğmeyle özelleştirin ve Görev Bölmesine içerik ekleyin]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Şeridi düğmeyle özelleştirip görev bölmesine içerik ekleyin]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Customize the Ribbon with a button and embed content in the Taskpane]]></Val>
@@ -3247,7 +3577,7 @@
       <Item ItemId=";core.newTaskpaneAddin.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Task pane]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Görev bölmesi]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -3261,6 +3591,15 @@
           <Val><![CDATA[Create new objects for Excel or PowerPoint]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Excel veya PowerPoint için yeni nesneler oluşturun]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.officeContentAddin.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Content Add-in]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[İçerik Eklentisi]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3301,8 +3640,8 @@
       <Item ItemId=";core.option.inProduct" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Open an in-product guide]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Ürün içi kılavuz aç]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ürün içi kılavuz açın]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Open a in-product guide]]></Val>
@@ -3313,8 +3652,8 @@
       <Item ItemId=";core.option.learnMore" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[More info]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Daha fazla bilgi edinin]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Daha fazla bilgi]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Learn more]]></Val>
@@ -3448,8 +3787,8 @@
       <Item ItemId=";core.projectVersionChecker.cliUseNewVersion" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Your Teams Toolkit CLI version is old and it doesn't support current project, please upgrade to the latest version using command below:]A;npm install -g @microsoft/teamsapp-cli@latest]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[TeamsFx CLI sürümünüz geçerli projeyi desteklemek için çok eski, lütfen aşağıdaki komutu kullanarak en son sürüme yükseltin:]A;npm install -g @microsoft/teamsfx-cli@latest]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams Araç Seti CLI sürümünüz çok eski olduğundan geçerli projeyi desteklemiyor. Şu komutla en son sürüme yükseltmeniz gerek:]A;npm install -g @microsoft/teamsapp-cli@latest]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Your TeamFx CLI version is old and it doesn't support current project, please upgrade to the latest version using command below:]A;npm install -g @microsoft/teamsfx-cli@latest]]></Val>
@@ -3508,8 +3847,8 @@
       <Item ItemId=";core.provision.learnMore" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[More info]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Daha fazla bilgi edinin]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Daha fazla bilgi]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Learn more]]></Val>
@@ -3556,6 +3895,9 @@
       <Item ItemId=";core.question.appName.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Application Name]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Uygulama Adı]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3574,8 +3916,20 @@
       <Item ItemId=";core.question.workspaceFolder.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Workspace Folder]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Çalışma alanı klasörü]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Çalışma Alanı Klasörü]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Workspace folder]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.scaffold.warning.summary" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[We have detected following issues:]A;%s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Şu sorunlar algılandı:]A;%s]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Workspace folder]]></Val>
@@ -3607,7 +3961,7 @@
       <Item ItemId=";core.selectCollaborationAppTypeQuestion.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Select the app for which you want to manage collaborators]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Ortak çalışanları yönetmek istediğiniz uygulamayı seçin]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -3628,8 +3982,8 @@
       <Item ItemId=";core.selectTeamsAppManifestQuestion.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Select Teams manifest.json File]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Teams manifest.json dosyasını seçin]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams manifest.json Dosyası seçin]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Select Teams manifest.json file]]></Val>
@@ -3640,8 +3994,8 @@
       <Item ItemId=";core.selectTeamsAppPackageQuestion.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Select Teams App Package File]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Teams uygulama paketi dosyası seçin]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams Uygulama Paketi Dosyası Seçin]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Select Teams app package file]]></Val>
@@ -3697,8 +4051,8 @@
       <Item ItemId=";core.spfxFolder.placeholder" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Select the folder containing your SPFx solution]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[SPFx çözümünüzü içeren klasörü seçin]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[SPFx çözümünüzün bulunduğu klasörü seçin]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Select the folder that contains your SPFx solution]]></Val>
@@ -3862,6 +4216,9 @@
       <Item ItemId=";core.syncManifest.projectPath" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Project path]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Proje yolu]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3886,6 +4243,9 @@
       <Item ItemId=";core.syncManifest.teamsAppId" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Teams App ID (optional)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams Uygulaması Kimliği (isteğe bağlı)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4054,6 +4414,9 @@
       <Item ItemId=";core.uninstallQuestion.env" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Environment]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ortam]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4114,12 +4477,18 @@
       <Item ItemId=";core.uninstallQuestion.projectPath" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Project path]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Proje yolu]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.uninstallQuestion.tdpOption" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[App registration]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Uygulama kaydı]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4237,8 +4606,8 @@
       <Item ItemId=";core.updateUrlQuestion.placeholder" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Deselect to keep the original URL]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Özgün URL’nin kalması için seçimi kaldırın]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Özgün URL'yi sürdürmek için seçimi kaldırın]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Unselect to keep with the original URL]]></Val>
@@ -4282,8 +4651,8 @@
       <Item ItemId=";debug.warningMessage" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[To debug applications in Teams, your localhost server need to be on HTTPS.]A;For Teams to trust the self-signed SSL certificate used by the toolkit, add a self-signed certificate to your certificate store.]A; You may skip this step, but you'll have to manually trust the secure connection in a new browser window when debugging your apps in Teams.]A;For more information "https://aka.ms/teamsfx-ca-certificate".]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Teams'de uygulama hataları ayıklamak için localhost sunucunuz HTTPS üzerinde olmalıdır.]A;Teams'in araç seti tarafından kullanılan otomatik olarak imzalanmış SSL sertifikasına güvenmesi için, sertifika deponuza otomatik olarak imzalanmış bir sertifika eklenmelidir.]A; Bu adımı atlayabilirsiniz, ancak Teams'de uygulamalarınızın hatalarını ayıklarken yeni bir tarayıcı penceresinde güvenli bağlantıya el ile güvenmeniz gerekecek.]A;Daha fazla bilgi için "https://aka.ms/teamsfx-ca-certificate"sayfasına bakın.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams'de uygulama hatalarını ayıklamak için localhost sunucunuzun HTTPS kullanması gereklidir.]A;Teams'in araç kitinde kullanılan otomatik olarak imzalanan SSL sertifikasına güvenmesi için otomatik olarak imzalanan sertifikayı sertifika depolama alanınıza ekleyin.]A; Bu adımı atlayabilirsiniz, ancak Teams'de uygulamalarınızın hatalarını ayıklarken yeni bir tarayıcı penceresinde güvenli bağlantıya el ile güvenmeniz gerekecek.]A;Daha fazla bilgi için bkz. "https://aka.ms/teamsfx-ca-certificate".]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[To debug applications in Teams, your localhost server must be on HTTPS.]A;For Teams to trust the self-signed SSL certificate used by the toolkit, a self-signed certificate must be added to your certificate store.]A; You may skip this step, but you'll have to manually trust the secure connection in a new browser window when debugging your apps in Teams.]A;For more information "https://aka.ms/teamsfx-ca-certificate".]]></Val>
@@ -4303,8 +4672,8 @@
       <Item ItemId=";depChecker.depsNotFound" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Unable to find @SupportedPackages.]A;]A;Teams Toolkit requires these dependencies.]A;]A;Click "Install" to install @InstallPackages.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[@SupportedPackages bulunamıyor.]A;]A;Teams Araç Seti bu bağımlılıkları gerektirir.]A;]A;@InstallPackages paketlerini yüklemek için “Yükle” seçeneğine tıklayın.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[@SupportedPackages bulunamıyor.]A;]A;Teams Araç Seti bu bağımlılıkları gerektirir.]A;]A;@InstallPackages paketlerini yüklemek için "Yükle" seçeneğine tıklayın.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Cannot find @SupportedPackages.]A;]A;Teams Toolkit requires these dependencies.]A;]A;Click "Install" to install @InstallPackages.]]></Val>
@@ -4354,8 +4723,8 @@
       <Item ItemId=";depChecker.downloadDotnet" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Downloading and installing the portable version of @NameVersion, which will be installed to @InstallDir and won't affect your environment.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[@InstallDir dizinine yüklenecek ve ortamınızı etkilemeyecek olan taşınabilir @NameVersion sürümü indiriliyor ve yükleniyor.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[@NameVersion taşınabilir sürümü indiriliyor ve yükleniyor. @InstallDir dizinine yüklenecek ve ortamınızı etkilemeyecek.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Downloading and installing the portable version of @NameVersion, which will be installed to @InstallDir and will not affect your environment.]]></Val>
@@ -4468,8 +4837,8 @@
       <Item ItemId=";depChecker.linuxDepsNotFound" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Unable to find @SupportedPackages. Install @SupportedPackages manually and restart Visual Studio Code.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[@SupportedPackages bulunamıyor. @SupportedPackages paketini el ile yükleyin ve Visual Studio Code’u yeniden başlatın.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[@SupportedPackages bulunamıyor. @SupportedPackages'ı elle yükleyin ve Visual Studio Code'u yeniden başlatın.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Cannot find @SupportedPackages. Install @SupportedPackages manually and restart Visual Studio Code.]]></Val>
@@ -4489,8 +4858,8 @@
       <Item ItemId=";depChecker.noSentinelFile" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Azure Functions Core Tools installation is unsuccessful.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Azure Functions Core Tools yüklemesi tamamlanmadı.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure Functions Core Tools yüklemesi başarısız oldu.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Azure Functions Core Tools installation is incomplete.]]></Val>
@@ -4501,8 +4870,8 @@
       <Item ItemId=";depChecker.portableFuncNodeNotMatched" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Your Node.js (@NodeVersion) is not compatible with Teams Toolkit Azure Functions Core Tools (@FuncVersion).]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Size ait olan Node.js (@NodeVersion) ile Azure Functions Core Tools (@FuncVersion) uyumlu değil.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Node.js sürümünüz (@NodeVersion) Teams Araç Seti Azure Functions Core Tools (@FuncVersion) ile uyumlu değil.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Your Node.js (@NodeVersion) is incompatible with Teams Toolkit Azure Functions Core Tools (@FuncVersion).]]></Val>
@@ -4573,8 +4942,8 @@
       <Item ItemId=";driver.aadApp.description.update" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Apply Microsoft Entra app manifest to an existing app]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Azure Active Directory uygulama bildirimini mevcut bir uygulamaya uygulayın]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Microsoft Entra uygulama bildirimini mevcut bir uygulamaya uygulayın]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Apply Azure Active Directory app manifest to an existing app]]></Val>
@@ -4594,8 +4963,29 @@
       <Item ItemId=";driver.aadApp.error.appNameTooLong" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The name for this Microsoft Entra app is too long. The maximum length is 120.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Bu Azure Active Directory uygulamasının adı çok uzun. Maksimum uzunluk 120.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Bu Microsoft Entra uygulamasının adı çok uzun. Maksimum uzunluk 120.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[The name for this Azure Active Directory app is too long. The maximum length is 120.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.aadApp.error.credentialInvalidLifetimeAsPerAppPolicy" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The client secret lifetime is too long for your tenant. Use a shorter value with the clientSecretExpireDays parameter.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[İstemci gizli dizisinin ömrü kiracınız için çok uzun. clientSecretExpireDays parametresiyle daha kısa bir değer kullanın.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.aadApp.error.credentialTypeNotAllowedAsPerAppPolicy" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Your tenant doesn't allow creating a client secret for Microsoft Entra app. Create and configure the app manually.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Kiracınız, uygulama için istemci gizli dizisi oluşturmaya izin Microsoft Entra. Uygulamayı el ile oluşturun ve yapılandırın.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[The name for this Azure Active Directory app is too long. The maximum length is 120.]]></Val>
@@ -4633,8 +5023,8 @@
       <Item ItemId=";driver.aadApp.error.invalidFieldInManifest" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Field %s is missing or invalid in Microsoft Entra app manifest.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Azure Active Directory uygulama bildiriminde %s alanı eksik veya geçersiz.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Microsoft Entra uygulama bildiriminde %s alanı eksik veya geçersiz.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Field %s is missing or invalid in Azure Active Directory app manifest.]]></Val>
@@ -4678,8 +5068,8 @@
       <Item ItemId=";driver.aadApp.log.outputAadAppManifest" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Build Microsoft Entra app manifest completed, and app manifest content is written to %s]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Azure Active Directory uygulama bildirimini derleme işlemi tamamlandı ve uygulama bildirimi içeriği şuraya yazıldı: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Microsoft Entra uygulama bildirimi derleme tamamlandı, uygulama bildirimi içeriği %s hedefine yazıldı]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Build Azure Active Directory app manifest completed, and app manifest content is written to %s]]></Val>
@@ -4690,8 +5080,8 @@
       <Item ItemId=";driver.aadApp.log.skipCreateAadApp" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Environment variable %s already exist, skipping new Microsoft Entra app creation step.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[%s ortam değişkeni zaten var. Yeni Azure Active Directory uygulaması oluşturma adımı atlanıyor.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[%s ortam değişkeni zaten mevcut olduğundan yeni Microsoft Entra uygulama oluşturma adımı atlanıyor.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Environment variable %s already exist, skipping new Azure Active Directory app creation step.]]></Val>
@@ -4702,8 +5092,8 @@
       <Item ItemId=";driver.aadApp.log.skipGenerateClientSecret" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Environment variable %s already exist, skipping Microsoft Entra app client secret generation step.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[%s ortam değişkeni zaten var. Azure Active Directory uygulaması istemci gizli dizisi oluşturma adımı atlanıyor.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[%s ortam değişkeni zaten mevcut, Microsoft Entra uygulama istemci gizli dizisi oluşturma adımı atlanıyor.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Environment variable %s already exist, skipping Azure Active Directory app client secret generation step.]]></Val>
@@ -4714,8 +5104,8 @@
       <Item ItemId=";driver.aadApp.log.startCreateAadApp" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Environment variable %s does not exist, creating a new Microsoft Entra app...]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[%s ortam değişkeni yok. Yeni bir Azure Active Directory uygulaması oluşturuluyor...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ortam değişkeni %s mevcut değil, yeni bir Microsoft Entra uygulaması oluşturuluyor...]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Environment variable %s does not exist, creating a new Azure Active Directory app...]]></Val>
@@ -4735,8 +5125,8 @@
       <Item ItemId=";driver.aadApp.log.startGenerateClientSecret" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Environment variable %s does not exist, generating client secret for Microsoft Entra app...]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[%s ortam değişkeni yok. Azure Active Directory uygulaması için istemci gizli dizisi oluşturuluyor...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[%s ortam değişkeni mevcut değil, Microsoft Entra uygulaması için gizli anahtar oluşturuluyor...]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Environment variable %s does not exist, generating client secret for Azure Active Directory app...]]></Val>
@@ -4768,8 +5158,8 @@
       <Item ItemId=";driver.aadApp.log.successGenerateClientSecret" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Generated client secret for Microsoft Entra application with object id %s]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[%s nesne kimlikli Azure Active Directory uygulaması için istemci gizli anahtarı oluşturuldu]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[%s nesne kimlikli Microsoft Entra uygulaması için gizli anahtar oluşturuldu]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Generated client secret for Azure Active Directory application with object id %s]]></Val>
@@ -4780,8 +5170,8 @@
       <Item ItemId=";driver.aadApp.log.successUpdateAadAppManifest" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Applied manifest %s to Microsoft Entra application with object id %s]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[%s nesne kimlikli Azure Active Directory uygulamasına %s bildirimi uygulandı]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[%s nesne kimlikli Microsoft Entra uygulamasına %s bildirimi uygulandı]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Applied manifest %s to Azure Active Directory application with object id %s]]></Val>
@@ -5311,8 +5701,8 @@
       <Item ItemId=";driver.file.createOrUpdateJsonFile.summary" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Json file has been successfully generated to %s.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[JSON dosyası, %s konumunda başarıyla oluşturuldu.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Json dosyası %s konumunda başarıyla oluşturuldu.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[The json file has been generated successfully to %s.]]></Val>

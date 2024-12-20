@@ -20,7 +20,6 @@ import { getLocalizedString } from "../../../../common/localizeUtils";
 import { err, FxError, ok, Result } from "@microsoft/teamsfx-api";
 import { FileNotFoundError, UserCancelError } from "../../../../error";
 import fs from "fs-extra";
-import { pathUtils } from "../../../utils/pathUtils";
 import { parseDocument } from "yaml";
 import { MetadataV3 } from "../../../../common/versionMetadata";
 import path from "path";

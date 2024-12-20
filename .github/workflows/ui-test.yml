@@ -417,6 +417,12 @@ jobs:
         run: |
           npx extest install-from-marketplace --storage .test-resources --extensions_dir .test-resources --type stable ms-azuretools.vscode-docker
 
+      - name: get vsix(unix)
+        if: matrix.os != 'windows-latest'
+        working-directory: packages/tests
+        run: |
+          find . -type f -name "*.vsix"
+
       - name: Install vsix(unix)
         if: matrix.os != 'windows-latest'
         working-directory: packages/tests

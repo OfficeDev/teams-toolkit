@@ -223,6 +223,7 @@ export async function initPage(
         }
       );
     }
+    await page.waitForTimeout(Timeout.shortTimeLoading);
     try {
       const openApp = await page?.waitForSelector(
         "button[data-testid='open-app'][data-tid='open-app']"

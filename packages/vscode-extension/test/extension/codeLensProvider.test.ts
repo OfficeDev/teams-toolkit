@@ -103,7 +103,7 @@ describe("CodeLens Provider", () => {
       const document = <vscode.TextDocument>{
         fileName: "./aad.manifest.json",
         getText: () => {
-          return "{name: 'test'}";
+          return '{"name": "test"}';
         },
       };
 
@@ -111,6 +111,27 @@ describe("CodeLens Provider", () => {
       const res = await aadProvider.provideCodeLenses(document);
       chai.assert.isTrue(
         res != null && res[0].command!.command === "fx-extension.openPreviewAadFile"
+      );
+
+      chai.assert.isTrue(
+        res != null && res[1].command!.command === "fx-extension.convertAadToNewSchema"
+      );
+    });
+
+    it("ComputeTemplateCodeLenses for AAD manifest template with new schema", async () => {
+      const document = <vscode.TextDocument>{
+        fileName: "./aad.manifest.json",
+        getText: () => {
+          return '{"displayName": "test"}';
+        },
+      };
+
+      const aadProvider = new AadAppTemplateCodeLensProvider();
+      const res = await aadProvider.provideCodeLenses(document);
+      chai.assert.isTrue(
+        res != null &&
+          res.length === 1 &&
+          res[0].command!.command === "fx-extension.openPreviewAadFile"
       );
     });
 

@@ -434,6 +434,17 @@ export class AadAppTemplateCodeLensProvider implements vscode.CodeLensProvider {
     return codeLenses;
   }
 
+  private computeConvertToNewSchemaCodeLenses(document: vscode.TextDocument): vscode.CodeLens[] {
+    const codeLenses = [];
+    const command = {
+      title: "⬆️" + "Convert to New Schema",
+      command: "fx-extension.convertAadToNewSchema",
+      arguments: [{ fsPath: document.fileName }],
+    };
+    codeLenses.push(new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), command));
+    return codeLenses;
+  }
+
   private computeTemplateCodeLenses(document: vscode.TextDocument): vscode.CodeLens[] {
     const text = document.getText();
     const jsonNode: parser.Node | undefined = parser.parseTree(text);
@@ -441,11 +452,17 @@ export class AadAppTemplateCodeLensProvider implements vscode.CodeLensProvider {
       const resAccessCodeLenses = this.computeRequiredResAccessCodeLenses(document, jsonNode);
       const preAuthAppCodeLenses = this.computePreAuthAppCodeLenses(document, jsonNode);
       const previewCodeLenses = this.computePreviewCodeLenses(document);
+      let convertToNewSchemaCodeLenses: vscode.CodeLens[] = [];
+      const jsonContent = JSON.parse(document.getText());
+      if (!jsonContent.displayName) {
+        convertToNewSchemaCodeLenses = this.computeConvertToNewSchemaCodeLenses(document);
+      }
       const stateAndConfigCodelenses = this.computeStateAndConfigCodeLenses(document);
       return [
         ...resAccessCodeLenses,
         ...preAuthAppCodeLenses,
         ...previewCodeLenses,
+        ...convertToNewSchemaCodeLenses,
         ...stateAndConfigCodelenses,
       ];
     }

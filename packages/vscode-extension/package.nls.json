@@ -92,6 +92,7 @@
   "teamstoolkit.commands.openInPortal.title": "Open in Portal",
   "teamstoolkit.commands.openManifestSchema.title": "Open Manifest Schema",
   "teamstoolkit.commands.previewAadManifest.title": "Preview Microsoft Entra Manifest File",
+  "teamstoolkit.commands.convertAadToNewSchema.title": "Upgrade Microsoft Entra Manifest to New Schema",
   "teamstoolkit.commands.previewApp.title": "Preview App",
   "teamstoolkit.commands.provision.title": "Provision",
   "teamstoolkit.commands.publish.title": "Publish",

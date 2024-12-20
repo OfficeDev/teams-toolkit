@@ -493,6 +493,8 @@
   "core.convertAadToNewSchema.warning": "Converting Microsoft Entra app manifest file to new schema will replace the original file. Do you still want to continue?",
   "core.convertAadToNewSchema.success": "Microsoft Entra app manifest file successfully converted to new schema.",
   "core.convertAadToNewSchema.alreadyNewSchema": "Microsoft Entra app manifest file you selected is already in the new schema.",
+  "core.convertAadToNewSchema.outdate": "Your Microsoft Entra app manifest is outdated. Click the upgrade button to update it.",
+  "core.convertAadToNewSchema.upgrade": "Upgrade",
   "core.teamsAppQuestion.label": "Teams app",
   "core.teamsAppQuestion.description": "Your Teams app",
   "core.M365SsoLaunchPageOptionItem.label": "React with Fluent UI",

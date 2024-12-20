@@ -7,8 +7,19 @@ import { AadManifestHelper } from "../../../../src/component/driver/aad/utility/
 import { AadManifestErrorMessage } from "../../../../src/component/driver/aad/error/aadManifestError";
 import { AADManifest } from "../../../../src/component/driver/aad/interface/AADManifest";
 import { AADApplication } from "../../../../src/component/driver/aad/interface/AADApplication";
+import * as sinon from "sinon";
+import { MockTools } from "../../../core/utils";
+import { setTools, TOOLS } from "../../../../src/common/globalVars";
+import { ok } from "@microsoft/teamsfx-api";
+import fs from "fs-extra";
 
 describe("Microsoft Entra manifest helper Test", () => {
+  const tools = new MockTools();
+  setTools(tools);
+
+  beforeEach(() => {
+    sinon.restore();
+  });
   it("manifestToApplication", async () => {
     const aadApp = AadManifestHelper.manifestToApplication(fakeAadManifest);
     chai.expect(aadApp).to.deep.equal(fakeAadApp);
@@ -75,6 +86,24 @@ describe("Microsoft Entra manifest helper Test", () => {
     delete invalidAadManifest.optionalClaims.accessToken;
     const warning = AadManifestHelper.validateManifest(invalidAadManifest);
     chai.expect(warning).contain(AadManifestErrorMessage.OptionalClaimsMissingIdtypClaim.trimEnd());
+  });
+
+  it("showWarningIfManifestIsOutdated should work if user confirm", async () => {
+    sinon.stub(TOOLS.ui, "showMessage").resolves(ok("Upgrade"));
+    sinon.stub(fs, "readJson").resolves(fakeAadManifest);
+    const convertManifestToNewSchemaAndOverrideStub = sinon
+      .stub(AadManifestHelper, "convertManifestToNewSchemaAndOverride")
+      .resolves();
+    await AadManifestHelper.showWarningIfManifestIsOutdated("fake-path");
+  });
+
+  it("showWarningIfManifestIsOutdated should work if user cancel", async () => {
+    sinon.stub(TOOLS.ui, "showMessage").resolves(ok(""));
+    sinon.stub(fs, "readJson").resolves(fakeAadManifest);
+    const convertManifestToNewSchemaAndOverrideStub = sinon
+      .stub(AadManifestHelper, "convertManifestToNewSchemaAndOverride")
+      .resolves();
+    await AadManifestHelper.showWarningIfManifestIsOutdated("fake-path");
   });
 
   it("processRequiredResourceAccessInManifest with id", async () => {

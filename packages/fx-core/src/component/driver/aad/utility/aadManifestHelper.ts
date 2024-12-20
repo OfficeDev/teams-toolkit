@@ -15,6 +15,11 @@ import {
   UnknownResourceAccessTypeUserError,
   UnknownResourceAppIdUserError,
 } from "../error/aadManifestError";
+import { TOOLS } from "../../../../common/globalVars";
+import { getLocalizedString } from "../../../../common/localizeUtils";
+import { err, FxError, ok, Result } from "@microsoft/teamsfx-api";
+import { FileNotFoundError, UserCancelError } from "../../../../error";
+import fs from "fs-extra";
 
 const componentName = "AadManifestHelper";
 
@@ -308,5 +313,67 @@ export class AadManifestHelper {
 
   public static isNewAADManifestSchema(manifest: AADManifest | AADApplication): boolean {
     return "displayName" in manifest;
+  }
+
+  public static async showWarningIfManifestIsOutdated(manifestTemplatePath: string): Promise<void> {
+    const manifest = await fs.readJson(manifestTemplatePath);
+    if (!AadManifestHelper.isNewAADManifestSchema(manifest)) {
+      void TOOLS.ui
+        .showMessage(
+          "warn",
+          getLocalizedString("core.convertAadToNewSchema.outdate"),
+          false,
+          getLocalizedString("core.convertAadToNewSchema.upgrade")
+        )
+        .then((result) => {
+          if (
+            result.isOk() &&
+            result.value === getLocalizedString("core.convertAadToNewSchema.upgrade")
+          ) {
+            void AadManifestHelper.convertManifestToNewSchemaAndOverride(manifestTemplatePath);
+          }
+        });
+    }
+  }
+
+  public static async convertManifestToNewSchemaAndOverride(
+    manifestTemplatePath: string
+  ): Promise<Result<undefined, FxError>> {
+    if (!(await fs.pathExists(manifestTemplatePath))) {
+      return err(new FileNotFoundError("convertAadToNewSchema", manifestTemplatePath));
+    }
+    const manifest = await fs.readJson(manifestTemplatePath);
+
+    if (AadManifestHelper.isNewAADManifestSchema(manifest)) {
+      void TOOLS.ui.showMessage(
+        "info",
+        getLocalizedString("core.convertAadToNewSchema.alreadyNewSchema"),
+        false
+      );
+      return ok(undefined);
+    }
+
+    const confirmRes = await TOOLS.ui.showMessage(
+      "warn",
+      getLocalizedString("core.convertAadToNewSchema.warning"),
+      true,
+      getLocalizedString("core.convertAadToNewSchema.continue")
+    );
+
+    if (confirmRes.isErr()) {
+      return err(confirmRes.error);
+    } else if (confirmRes.value !== getLocalizedString("core.convertAadToNewSchema.continue")) {
+      return err(new UserCancelError());
+    }
+
+    const result = AadManifestHelper.manifestToApplication(manifest);
+    await fs.writeJson(manifestTemplatePath, result, { spaces: 2 });
+    void TOOLS.ui.showMessage(
+      "info",
+      getLocalizedString("core.convertAadToNewSchema.success"),
+      false
+    );
+
+    return ok(undefined);
   }
 }

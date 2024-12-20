@@ -1,0 +1,11 @@
+{
+  "name": "teamsfx-declarative-agent",
+  "version": "0.1.0",
+  "engines": {
+    "node": "18"
+  },
+  "private": true,
+  "scripts": {
+    "proxy:teamsfx": "devproxy -c proxy/config.json"
+  }
+}

@@ -1077,21 +1077,19 @@ function parseSpec(spec: OpenAPIV3.Document): [SpecObject[], boolean] {
       if (pathItem) {
         const operations = pathItem;
         for (const method in operations) {
-          if (method === "get" || method === "post") {
-            const operationItem = (operations as any)[method] as OpenAPIV3.OperationObject;
-            if (operationItem) {
-              const authResult = Utils.getAuthArray(operationItem.security, spec);
-              const hasAuth = authResult.length != 0;
-              if (hasAuth) {
-                needAuth = true;
-              }
-              res.push({
-                item: operationItem,
-                method: method,
-                pathUrl: pathUrl,
-                auth: hasAuth,
-              });
+          const operationItem = (operations as any)[method] as OpenAPIV3.OperationObject;
+          if (operationItem) {
+            const authResult = Utils.getAuthArray(operationItem.security, spec);
+            const hasAuth = authResult.length != 0;
+            if (hasAuth) {
+              needAuth = true;
             }
+            res.push({
+              item: operationItem,
+              method: method,
+              pathUrl: pathUrl,
+              auth: hasAuth,
+            });
           }
         }
       }

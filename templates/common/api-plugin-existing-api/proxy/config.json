@@ -1,0 +1,25 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/dev-proxy/main/schemas/v0.23.0/rc.schema.json",
+  "plugins": [
+    {
+      "name": "MockResponsePlugin",
+      "enabled": true,
+      "pluginPath": "~appFolder\\plugins\\dev-proxy-plugins.dll",
+      "configSection": "mocksPlugin"
+    }
+  ],
+  "urlsToWatch": [
+    "http://example.com/*"
+  ],
+  "mocksPlugin": {
+    "mocksFile": "mockResponse.json"
+  },
+  "devTools": {
+    "preferredBrowser": "Edge"
+  },
+  "rate": 0,
+  "port": 54000,
+  "asSystemProxy": false,
+  "labelMode": "text",
+  "logLevel": "information"
+}

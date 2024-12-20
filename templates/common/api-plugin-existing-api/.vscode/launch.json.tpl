@@ -74,7 +74,32 @@
                 "order": 2
             },
             "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Preview in Copilot with dev proxy(Edge)",
+            "type": "msedge",
+            "request": "launch",
+            "url": "https://m365.cloud.microsoft/chat/entity1-d870f6cd-4aa5-4d42-9626-ab690c041429/${agent-hint}?auth=2",
+            "presentation": {
+                "group": "all",
+                "hidden": true
+            },
+            "internalConsoleOptions": "neverOpen"
         }
+    ],
+    "compounds": [
+        {
+            "name": "Debug in Teams (Edge)",
+            "configurations": [
+                "Preview in Copilot with dev proxy(Edge)"
+            ],
+            "preLaunchTask": "Launch mock",
+            "presentation": {
+                "group": "2-Teams",
+                "order": 1
+            },
+            "stopAll": true
+        },
     ]
 }
 {{/DeclarativeCopilot}}

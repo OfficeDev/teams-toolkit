@@ -106,7 +106,7 @@ describe("Local Debug Tests", function () {
 
         let insertDataCmd = "";
         if (os.type() === "Windows_NT") {
-          insertDataCmd = `npm run assistant:create -- '"${azureOpenAiKey}"'`;
+          insertDataCmd = `npm run assistant:create -- ${azureOpenAiKey}`;
         } else {
           insertDataCmd = `npm run assistant:create -- '${azureOpenAiKey}'`;
         }

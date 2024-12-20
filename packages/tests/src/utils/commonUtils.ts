@@ -510,25 +510,24 @@ export function modifyFileContext(
   line: string,
   newLine: string
 ) {
+  let data = "";
   if (!fs.existsSync(filePath)) {
     console.error("file not exist: ", filePath);
     return;
   }
 
-  fs.readFile(filePath, "utf8", (err, data) => {
-    if (err) {
-      console.error("readfile error: ", err);
-      return;
-    }
+  try {
+    data = fs.readFileSync(filePath, "utf8");
+  } catch (error) {
+    console.error("readfile error: ", error);
+    return;
+  }
+  const modifiedData = data.replace(line, newLine);
 
-    const modifiedData = data.replace(line, newLine);
-
-    fs.writeFile(filePath, modifiedData, "utf8", (err) => {
-      if (err) {
-        console.error("write file error: ", err);
-      } else {
-        console.log("file content replaced!");
-      }
-    });
-  });
+  try {
+    fs.writeFileSync(filePath, modifiedData, "utf8");
+    console.log("file content replaced!");
+  } catch (error) {
+    console.error("write file error: ", error);
+  }
 }

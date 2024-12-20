@@ -78,7 +78,7 @@ describe("Local Debug Tests", function () {
         azureOpenAiModelDeploymentName
       );
       const creatorFile = path.resolve(projectPath, "src", "creator.ts");
-      modifyFileContext(
+      await modifyFileContext(
         creatorFile,
         'const azureOpenAIEndpoint="";',
         `const azureOpenAIEndpoint="${azureOpenAiEndpoint}";`

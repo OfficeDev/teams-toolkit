@@ -25,6 +25,7 @@ import {
   validateFileExist,
 } from "../../utils/commonUtils";
 import { Executor } from "../../utils/executor";
+import os from "os";
 
 describe("Local Debug Tests", function () {
   this.timeout(Timeout.testCase);
@@ -77,7 +78,7 @@ describe("Local Debug Tests", function () {
         "AZURE_OPENAI_MODEL_DEPLOYMENT_NAME",
         azureOpenAiModelDeploymentName
       );
-      const creatorFile = path.resolve(projectPath, "src", "creator.ts");
+      const creatorFile = path.resolve(projectPath, "src", "creator.js");
       await modifyFileContext(
         creatorFile,
         'const azureOpenAIEndpoint="";',
@@ -103,14 +104,14 @@ describe("Local Debug Tests", function () {
           throw new Error("Failed to install packages");
         }
 
-        const insertDataCmd = `npm run assistant:create -- '${azureOpenAiKey}'`;
-        const {
-          success: insertDataSuccess,
-          stdout: log,
-          stderr: errlog,
-        } = await Executor.execute(insertDataCmd, projectPath);
-        console.log("log", log);
-        console.log("errlog", errlog);
+        let insertDataCmd = "";
+        if (os.type() === "Windows_NT") {
+          insertDataCmd = `npm run assistant:create -- '"${azureOpenAiKey}"'`;
+        } else {
+          insertDataCmd = `npm run assistant:create -- '${azureOpenAiKey}'`;
+        }
+        const { success: insertDataSuccess, stdout: log } =
+          await Executor.execute(insertDataCmd, projectPath);
         // get assistant id from log string
         const assistantId = log.match(
           /Created a new assistant with an ID of: (.*)/

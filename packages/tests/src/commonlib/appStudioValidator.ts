@@ -7,6 +7,10 @@ import * as chai from "chai";
 import MockM365TokenProvider from "@microsoft/m365agentstoolkit-cli/src/commonlib/m365LoginUserPassword";
 import { M365TokenProvider } from "@microsoft/teamsfx-api";
 import { AppStudioScopes } from "@microsoft/teamsfx-core";
+import {
+  getTeamsAppApiPath,
+  isUsingNewDeveloperPortalApis,
+} from "./developerPortalApi";
 import { IAppStudioObject } from "./interfaces/IAADDefinition";
 
 const appStudioPluginName = "fx-resource-appstudio";
@@ -66,7 +70,8 @@ export class AppStudioValidator {
       appStudioToken!,
     );
     try {
-      const response = await requester.delete(`/v1.0/apps/${teamsAppId}`);
+      const path = await getTeamsAppApiPath(requester, teamsAppId);
+      const response = await requester.delete(path);
       chai.assert.isTrue(response.status >= 200 && response.status < 300);
       return;
     } catch (e) {
@@ -152,9 +157,12 @@ export class AppStudioValidator {
     const requester =
       AppStudioValidator.createRequesterWithToken(appStudioToken);
     try {
-      const response = await requester.get(`/v1.0/apps/${teamsAppId}`);
+      const path = await getTeamsAppApiPath(requester, teamsAppId);
+      const response = await requester.get(path);
       const app = response.data;
-      return app?.appId === teamsAppId;
+      return isUsingNewDeveloperPortalApis()
+        ? app?.appId !== undefined
+        : app?.teamsAppId === teamsAppId;
     } catch (e) {
       return false;
     }
@@ -172,10 +180,13 @@ export class AppStudioValidator {
       appStudioToken!,
     );
     try {
-      const response = await requester.get(`/v1.0/apps/${teamsAppId}`);
+      const path = await getTeamsAppApiPath(requester, teamsAppId);
+      const response = await requester.get(path);
       chai.assert.isTrue(response && response.data);
       const app = response.data;
-      chai.assert.equal(app?.appId, teamsAppId);
+      if (!isUsingNewDeveloperPortalApis()) {
+        chai.assert.equal(app?.teamsAppId, teamsAppId);
+      }
       return app;
     } catch (e) {
       chai.assert.fail(`Failed to get Teams App, error: ${e}`);

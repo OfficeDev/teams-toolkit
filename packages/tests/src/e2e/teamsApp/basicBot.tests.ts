@@ -39,7 +39,6 @@ import {
 
 const developerPortalApiModes = [
   { name: "legacy", featureFlagValue: "false", testPlanCaseId: 17449538 },
-  { name: "new DP", featureFlagValue: "true", testPlanCaseId: undefined },
 ] as const;
 
 for (const apiMode of developerPortalApiModes) {

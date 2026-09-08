@@ -34,7 +34,6 @@ import { deleteTeamsApp, getTeamsApp } from "../debug/utility";
 
 const developerPortalApiModes = [
   { name: "legacy", featureFlagValue: "false", testPlanCaseId: 24137515 },
-  { name: "new DP", featureFlagValue: "true", testPlanCaseId: undefined },
 ] as const;
 
 for (const apiMode of developerPortalApiModes) {

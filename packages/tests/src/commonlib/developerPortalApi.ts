@@ -20,6 +20,12 @@ export function isUsingNewDeveloperPortalApis(): boolean {
   return value === "1" || value?.toLowerCase() === "true";
 }
 
+export function getBotRegistrationApiPath(botId: string): string {
+  return isUsingNewDeveloperPortalApis()
+    ? `/v1.0/botregistrations/${botId}`
+    : `/api/botframework/${botId}`;
+}
+
 export async function getTeamsAppApiPath(
   requester: AxiosInstance,
   teamsAppId: string,

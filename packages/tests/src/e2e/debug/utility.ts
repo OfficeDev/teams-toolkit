@@ -5,6 +5,7 @@ import m365Provider from "@microsoft/m365agentstoolkit-cli/src/commonlib/m365Log
 import { AppStudioScopes, GraphScopes } from "@microsoft/teamsfx-core";
 import axios, { AxiosInstance } from "axios";
 import {
+  getBotRegistrationApiPath,
   getTeamsAppApiPath,
   isUsingNewDeveloperPortalApis,
 } from "../../commonlib/developerPortalApi";
@@ -107,9 +108,7 @@ export async function deleteBot(botId: string) {
   const requester = await createRequester();
   for (let retries = 3; retries > 0; --retries) {
     try {
-      const response = await requester.delete(
-        `/v1.0/botregistrations/${botId}`,
-      );
+      const response = await requester.delete(getBotRegistrationApiPath(botId));
       if (response.status >= 200 && response.status < 300) {
         console.log("Successfully deleted bot");
         return;
@@ -124,7 +123,7 @@ export async function getBot(botId: string): Promise<any> {
   const requester = await createRequester();
   for (let retries = 3; retries > 0; --retries) {
     try {
-      const response = await requester.get(`/v1.0/botregistrations/${botId}`);
+      const response = await requester.get(getBotRegistrationApiPath(botId));
       if (response.status >= 200 && response.status < 300) {
         console.log("Successfully got bot");
         return response.data;

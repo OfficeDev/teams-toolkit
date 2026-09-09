@@ -306,6 +306,90 @@ const rejectedScaffoldTextAttemptAdapters = {
 // account the earlier sign-in left behind. Those are different pages, not the
 // same page with an extra step: the email field is not where the first page put
 // it, and Next moves too. Each entry state therefore gets its own component.
+const noAzureSubscriptionsScript = String.raw`import base64
+import json
+import os
+import sys
+import urllib.error
+import urllib.parse
+import urllib.request
+
+def request_json(request):
+  try:
+    with urllib.request.urlopen(request, timeout=60) as response:
+      if response.status != 200:
+        raise ValueError("Unexpected HTTP status")
+      result = json.load(response)
+    if not isinstance(result, dict):
+      raise ValueError("Expected a JSON object")
+    return result
+  except urllib.error.HTTPError as error:
+    codes = []
+    try:
+      payload = json.loads(error.read())
+      if isinstance(payload, dict):
+        codes = [str(code) for code in payload.get("error_codes", []) if type(code) is int]
+    except (ValueError, TypeError):
+      pass
+    raise ValueError("HTTP " + str(error.code) + "; identity error codes: " + ",".join(codes)) from None
+
+def verify():
+  account = os.environ.get("AZURE_NO_SUB_ACCOUNT_NAME", "")
+  password = os.environ.get("M365_ACCOUNT_PASSWORD", "")
+  if not account or not password or account.count("@") != 1:
+    raise ValueError("Dedicated account or shared password is missing")
+  domain = account.rsplit("@", 1)[1]
+  if not domain or any(character not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.-" for character in domain):
+    raise ValueError("Invalid account domain")
+  body = urllib.parse.urlencode({
+    "client_id": "04b07795-8ddb-461a-bbee-02f9e1bf7b46",
+    "grant_type": "password",
+    "username": account,
+    "password": password,
+    "scope": "https://management.azure.com/.default",
+  }).encode("utf-8")
+  token_response = request_json(urllib.request.Request(
+    "https://login.microsoftonline.com/" + domain + "/oauth2/v2.0/token",
+    data=body,
+    headers={"Content-Type": "application/x-www-form-urlencoded"},
+  ))
+  token = token_response.get("access_token")
+  if not isinstance(token, str) or len(token.split(".")) != 3:
+    raise ValueError("Authentication did not return an access token")
+  encoded_claims = token.split(".")[1]
+  claims = json.loads(base64.urlsafe_b64decode(encoded_claims + "=" * (-len(encoded_claims) % 4)))
+  if not isinstance(claims, dict):
+    raise ValueError("Invalid token claims")
+  identity = claims.get("upn") or claims.get("preferred_username") or claims.get("unique_name")
+  if not isinstance(identity, str) or identity.casefold() != account.casefold():
+    raise ValueError("Authenticated identity does not match the dedicated user")
+  url = "https://management.azure.com/subscriptions?api-version=2022-12-01"
+  visited = set()
+  while url:
+    parsed = urllib.parse.urlsplit(url)
+    if parsed.scheme != "https" or parsed.netloc != "management.azure.com" or parsed.path != "/subscriptions" or url in visited or len(visited) >= 10:
+      raise ValueError("Invalid subscription continuation URL")
+    visited.add(url)
+    subscriptions = request_json(urllib.request.Request(url, headers={"Authorization": "Bearer " + token}))
+    if not isinstance(subscriptions.get("value"), list):
+      raise ValueError("Subscription response is missing its list")
+    if subscriptions["value"]:
+      raise ValueError("Dedicated user has accessible Azure subscriptions")
+    url = subscriptions.get("nextLink", "")
+    if not isinstance(url, str):
+      raise ValueError("Invalid subscription continuation value")
+  print("VSCUSE_NO_AZURE_SUBSCRIPTIONS_VERIFIED")
+
+try:
+  verify()
+except ValueError as error:
+  print("No-subscription fixture failed: " + str(error) if not isinstance(error, json.JSONDecodeError) else "No-subscription fixture failed: malformed JSON", file=sys.stderr)
+  sys.exit(1)
+except Exception:
+  print("No-subscription fixture failed: authentication or network response could not be validated", file=sys.stderr)
+  sys.exit(1)
+`;
+
 const accountAdapters = {
   azure: {
     accountVariable: "AZURE_ACCOUNT_NAME",
@@ -1178,6 +1262,26 @@ function createSemanticStepCompiler() {
   }
 
   function compileLogin(state, definition) {
+    const noSubscriptions = definition.with?.subscriptions !== undefined;
+    if (
+      noSubscriptions &&
+      (definition.with.type !== "azure" ||
+        definition.with.subscriptions !== "none" ||
+        definition.with.account !== "${{env:AZURE_NO_SUB_ACCOUNT_NAME}}" ||
+        definition.with.password !== "${{secret:M365_ACCOUNT_PASSWORD}}" ||
+        Object.keys(definition.with).some(
+          (key) =>
+            !["type", "account", "password", "subscriptions"].includes(key),
+        ) ||
+        state.template !== "da/no-action" ||
+        state.requiresInitialFileCheck ||
+        state.credentials.size !== 0)
+    ) {
+      return failure(
+        "VCB_NO_SUBSCRIPTION_INPUT_INVALID",
+        "No-subscription login requires a checked No Action DA, a dedicated Azure username, the shared M365 password and no prior login.",
+      );
+    }
     const accountMatch = environmentExpressionPattern.exec(
       definition.with?.account ?? "",
     );
@@ -1191,7 +1295,10 @@ function createSemanticStepCompiler() {
       );
     }
     const account = accountAdapters[definition.with?.type];
-    if (account === undefined || account.accountVariable !== accountMatch[1]) {
+    if (
+      account === undefined ||
+      (!noSubscriptions && account.accountVariable !== accountMatch[1])
+    ) {
       return failure(
         "VCB_ACCOUNT_UNKNOWN",
         "The login account is not supported by the semantic adapter.",
@@ -1199,6 +1306,18 @@ function createSemanticStepCompiler() {
     }
 
     const output = [];
+    if (noSubscriptions) {
+      const fixtureError = append(
+        output,
+        render(state, "authentication/azure/verify-no-subscriptions.json.tpl", {
+          script:
+            "=== Generated Script ===\nLanguage: bash\n\n```bash\nset -euo pipefail\npython3 - <<'PY'\n" +
+            noAzureSubscriptionsScript +
+            "PY\n```",
+        }),
+      );
+      if (fixtureError) return fixtureError;
+    }
     // Scaffolding reopens the workspace in a new window whose side bar defaults
     // to the Explorer, so the toolkit view container that owns the ACCOUNTS
     // section is not showing. Show the container and let the account components
@@ -2909,13 +3028,63 @@ function createSemanticStepCompiler() {
     return { ok: true, value: output };
   }
 
+  function compileSwitchM365Account(state, definition, isLastStep) {
+    const inputs = definition.with;
+    if (
+      isLastStep ||
+      !isRecord(inputs) ||
+      !hasOnlyFields(inputs, new Set(["account", "password"])) ||
+      inputs.account !== "${{env:MS_AZURE_ACCOUNT_NAME}}" ||
+      inputs.password !== "${{secret:MS_AZURE_ACCOUNT_PASSWORD}}" ||
+      state.template !== "default-bot" ||
+      state.language !== "typescript" ||
+      state.closedDebugProfile !== targetAdapters["Debug in Teams (Chrome)"] ||
+      !state.credentials.has("m365") ||
+      state.pendingTenantMismatch !== undefined
+    ) {
+      return failure(
+        "VCB_SWITCH_M365_ACCOUNT_INPUT_INVALID",
+        "Switching accounts requires a closed TypeScript Simple Bot session and the alternate tenant credential expressions.",
+      );
+    }
+    const output = [];
+    let error = append(
+      output,
+      render(state, "authentication/m365/sign-out.json.tpl", {}),
+    );
+    if (error) return error;
+    error = append(
+      output,
+      render(
+        state,
+        "authentication/m365/sign-in-from-account-picker.json.tpl",
+        {
+          accountName: inputs.account,
+          accountPassword: inputs.password,
+        },
+      ),
+    );
+    if (error) return error;
+    state.pendingTenantMismatch = state.credentials.get("m365");
+    state.credentials.set("m365", {
+      accountName: inputs.account,
+      accountPassword: inputs.password,
+    });
+    return { ok: true, value: output };
+  }
+
   function compileTarget(state, definition) {
     const inputs = definition.with;
     if (
       !isRecord(inputs) ||
       !hasOnlyFields(
         inputs,
-        new Set(["profile", "profileSelection", "runtimeInputs"]),
+        new Set([
+          "profile",
+          "profileSelection",
+          "runtimeInputs",
+          "tenantMismatch",
+        ]),
       )
     ) {
       return failure(
@@ -2925,6 +3094,20 @@ function createSemanticStepCompiler() {
     }
     const profileTitle = inputs.profile;
     const profile = targetAdapters[profileTitle];
+    if (
+      (inputs.tenantMismatch !== undefined ||
+        state.pendingTenantMismatch !== undefined) &&
+      (state.pendingTenantMismatch === undefined ||
+        !["cancel", "continue"].includes(inputs.tenantMismatch) ||
+        profileTitle !== "Debug in Teams (Chrome)" ||
+        state.closedDebugProfile !== profile ||
+        inputs.runtimeInputs !== undefined)
+    ) {
+      return failure(
+        "VCB_TARGET_TENANT_MISMATCH_INPUT_INVALID",
+        "The switched account requires an explicit Cancel or Continue outcome on the closed local Chrome profile.",
+      );
+    }
     if (profile === undefined) {
       return failure(
         "VCB_TARGET_PROFILE_UNKNOWN",
@@ -3054,6 +3237,46 @@ function createSemanticStepCompiler() {
         }),
       );
       if (error) return error;
+    }
+    if (state.pendingTenantMismatch !== undefined) {
+      error = append(
+        output,
+        render(state, "dialog/tenant-mismatch.json.tpl", {
+          actionLabel:
+            inputs.tenantMismatch === "cancel" ? "Cancel" : "Continue",
+          actionKey: inputs.tenantMismatch === "cancel" ? "escape" : "enter",
+        }),
+      );
+      if (error) return error;
+      const originalCredentials = state.pendingTenantMismatch;
+      state.pendingTenantMismatch = undefined;
+      if (inputs.tenantMismatch === "cancel") {
+        error = append(
+          output,
+          render(state, "debug/assert-launch-cancelled.json.tpl", {}),
+        );
+        if (error) return error;
+        error = append(
+          output,
+          render(state, "debug/assert-stopped.json.tpl", {}),
+        );
+        if (error) return error;
+        state.closedDebugProfile = undefined;
+        state.profile = undefined;
+        state.completed.delete("target");
+        state.completed.delete("chat-ready");
+        return { ok: true, value: output };
+      }
+      error = append(
+        output,
+        render(
+          state,
+          "authentication/m365/reauthenticate.json.tpl",
+          originalCredentials,
+        ),
+      );
+      if (error) return error;
+      state.credentials.set("m365", originalCredentials);
     }
     if (
       profile.browserAuthentication !== undefined &&
@@ -3469,7 +3692,46 @@ function createSemanticStepCompiler() {
     return { ok: true, value: output };
   }
 
-  return ({ caseId, definition, featureFlags, occurrence }) => {
+  return ({ caseId, definition, featureFlags, isLastStep, occurrence }) => {
+    if (definition.type === "checkCopilotLicense") {
+      const inputs = definition.with;
+      if (
+        occurrence !== 1 ||
+        !isLastStep ||
+        !isRecord(inputs) ||
+        !hasOnlyFields(inputs, new Set(["account", "password"])) ||
+        inputs.account !== "${{env:M365_ACCOUNT_NAME_EnableCopilotAccess}}" ||
+        inputs.password !==
+          "${{secret:M365_ACCOUNT_PASSWORD_EnableCopilotAccess}}"
+      ) {
+        return failure(
+          "VCB_LICENSE_INPUT_INVALID",
+          "The standalone license check requires the protected Copilot account expressions.",
+        );
+      }
+      const licenseState = { caseId, occurrence, componentIndex: 0 };
+      const output = [];
+      let error = append(
+        output,
+        render(licenseState, "initialization/close-welcome-overlay.json.tpl"),
+      );
+      if (error) return error;
+      error = append(
+        output,
+        render(licenseState, "command-palette/execute-command.json.tpl", {
+          commandTitle: "Welcome: Open Walkthrough...",
+        }),
+      );
+      if (error) return error;
+      error = append(
+        output,
+        render(licenseState, "accounts/check-copilot-license.json.tpl", {
+          accountName: inputs.account,
+          accountPassword: inputs.password,
+        }),
+      );
+      return error ?? { ok: true, value: output };
+    }
     let state = states.get(caseId);
     if (definition.type === "scaffold") {
       state = {
@@ -3501,11 +3763,23 @@ function createSemanticStepCompiler() {
       );
     }
 
+    if (
+      state.pendingTenantMismatch !== undefined &&
+      !["target", "switchM365Account"].includes(definition.type)
+    ) {
+      return failure(
+        "VCB_SWITCH_M365_ACCOUNT_INPUT_INVALID",
+        "The alternate account switch must be followed immediately by the tenant mismatch target.",
+      );
+    }
+
     switch (definition.type) {
       case "scaffold":
         return compileScaffold(state, definition);
       case "login":
         return compileLogin(state, definition);
+      case "switchM365Account":
+        return compileSwitchM365Account(state, definition, isLastStep);
       case "provision":
       case "deploy":
         return compileLifecycle(state, definition);

@@ -10,7 +10,7 @@
   "core.addKnowledge.continue": "Aggiungi",
   "core.addSkill.confirm": "Microsoft 365 Agents Toolkit modificherà i file nella cartella \"%s\" per aggiungere la competenza dell'agente. Per evitare di perdere modifiche impreviste, esegui il backup dei file o usa Git per il rilevamento modifiche prima di procedere.",
   "core.addSkill.continue": "Aggiungi",
-  "core.addSkill.featureFlagDisabled": "Le competenze dell'agente non sono abilitate. Impostare la variabile di ambiente ATK_FRONTIER=true per abilitare questa funzionalità di anteprima.",
+  "core.addSkill.featureFlagDisabled": "Le competenze dell'agente non sono abilitate. Impostare la variabile di ambiente TEAMSFX_AGENT_SKILLS=true per abilitare questa funzionalità di anteprima.",
   "core.setSensitivityLabel.confirm": "Teams Toolkit modificherà il file \"%s\" in base all'etichetta di riservatezza specificata. Per evitare di perdere modifiche impreviste, esegui il backup dei file o usa Git per il rilevamento delle modifiche prima di procedere.",
   "core.setSensitivityLabel.continue": "Imposta",
   "core.provision.provision": "Effettua il provisioning",

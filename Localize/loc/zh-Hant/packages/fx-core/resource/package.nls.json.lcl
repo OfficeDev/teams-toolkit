@@ -1665,9 +1665,9 @@
       </Item>
       <Item ItemId=";core.addSkill.featureFlagDisabled" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Agent skills are not enabled. Set the environment variable ATK_FRONTIER=true to enable this preview feature.]]></Val>
+          <Val><![CDATA[Agent skills are not enabled. Set the environment variable TEAMSFX_AGENT_SKILLS=true to enable this preview feature.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[未啟用 Agent 技能。設定環境變數 ATK_FRONTIER=true 以啟用此預覽功能。]]></Val>
+            <Val><![CDATA[未啟用 Agent 技能。設定環境變數 TEAMSFX_AGENT_SKILLS=true 以啟用此預覽功能。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

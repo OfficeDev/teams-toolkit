@@ -10,7 +10,7 @@
   "core.addKnowledge.continue": "추가",
   "core.addSkill.confirm": "Microsoft 365 에이전트 도구 키트에서 에이전트 스킬을 추가하기 위해 \"%s\" 폴더의 파일을 수정합니다. 예기치 않은 변경 내용이 손실되지 않도록 하려면 계속하기 전에 파일을 백업하거나 변경 내용 추적에 git을 사용합니다.",
   "core.addSkill.continue": "추가",
-  "core.addSkill.featureFlagDisabled": "에이전트 기술이 사용하도록 설정되어 있지 않습니다. 이 미리 보기 기능을 사용하려면 환경 변수 ATK_FRONTIER=true를 설정하세요.",
+  "core.addSkill.featureFlagDisabled": "에이전트 기술이 사용하도록 설정되어 있지 않습니다. 이 미리 보기 기능을 사용하려면 환경 변수 TEAMSFX_AGENT_SKILLS=true를 설정하세요.",
   "core.setSensitivityLabel.confirm": "Teams 도구 키트는 사용자가 제공한 민감도 레이블에 따라 \"%s\" 파일을 수정합니다. 예기치 않은 변경 내용의 손실을 방지하려면 진행하기 전에 파일을 백업하거나 변경 내용 추적을 위해 git을 사용하세요.",
   "core.setSensitivityLabel.continue": "설정",
   "core.provision.provision": "프로비전",

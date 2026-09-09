@@ -10,7 +10,7 @@
   "core.addKnowledge.continue": "新增",
   "core.addSkill.confirm": "Microsoft 365 Agents Toolkit 會修改 \"%s\" 資料夾中的檔案，以新增 Agent 技能。為了避免遺失未預期的變更，請在繼續之前備份您的檔案或使用 Git 進行變更追蹤。",
   "core.addSkill.continue": "新增",
-  "core.addSkill.featureFlagDisabled": "未啟用 Agent 技能。設定環境變數 ATK_FRONTIER=true 以啟用此預覽功能。",
+  "core.addSkill.featureFlagDisabled": "未啟用 Agent 技能。設定環境變數 TEAMSFX_AGENT_SKILLS=true 以啟用此預覽功能。",
   "core.setSensitivityLabel.confirm": "Teams 工具組會根據您提供的敏感度標籤來修改檔案 \"%s\"。為了避免遺失未預期的變更，請在繼續之前備份您的檔案或使用 Git 進行變更追蹤。",
   "core.setSensitivityLabel.continue": "設定",
   "core.provision.provision": "佈建",

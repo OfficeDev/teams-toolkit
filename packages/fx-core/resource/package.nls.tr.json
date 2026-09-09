@@ -10,7 +10,7 @@
   "core.addKnowledge.continue": "Ekle",
   "core.addSkill.confirm": "Microsoft 365 Aracı Araç Seti, aracı becerisini eklemek için “%s” klasörünüzdeki dosyaları değiştirecek. Beklenmedik değişiklikleri kaybetmemek için, devam etmeden önce dosyalarınızı yedekleyin veya değişiklik takibi için git kullanın.",
   "core.addSkill.continue": "Ekle",
-  "core.addSkill.featureFlagDisabled": "Aracı becerileri etkin değil. Bu önizleme özelliğini etkinleştirmek için ATK_FRONTIER=true ortam değişkenini ayarlayın.",
+  "core.addSkill.featureFlagDisabled": "Aracı becerileri etkin değil. Bu önizleme özelliğini etkinleştirmek için TEAMSFX_AGENT_SKILLS=true ortam değişkenini ayarlayın.",
   "core.setSensitivityLabel.confirm": "Teams Araç Kutusu, \"%s\" dosyasını, sağladığınız duyarlılık etiketine göre değiştirir. Beklenmedik değişiklikleri kaybetmemek için, devam etmeden önce dosyalarınızı yedekleyin veya değişiklik takibi için git kullanın.",
   "core.setSensitivityLabel.continue": "Ayarla",
   "core.provision.provision": "Sağlama",

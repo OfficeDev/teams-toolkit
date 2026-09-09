@@ -10,7 +10,7 @@
   "core.addKnowledge.continue": "Dodaj",
   "core.addSkill.confirm": "Zestaw narzędzi agentów platformy Microsoft 365 zmodyfikuje pliki w folderze „%s”, aby dodać umiejętność agenta. Aby uniknąć utraty nieoczekiwanych zmian, przed kontynuowaniem utwórz kopię zapasową plików lub użyj systemu Git do śledzenia zmian.",
   "core.addSkill.continue": "Dodaj",
-  "core.addSkill.featureFlagDisabled": "Umiejętności agenta nie są włączone. Ustaw zmienną środowiskową ATK_FRONTIER=true, aby włączyć tę funkcję w wersji zapoznawczej.",
+  "core.addSkill.featureFlagDisabled": "Umiejętności agenta nie są włączone. Ustaw zmienną środowiskową TEAMSFX_AGENT_SKILLS=true, aby włączyć tę funkcję w wersji zapoznawczej.",
   "core.setSensitivityLabel.confirm": "Zestaw narzędzi Teams zmodyfikuje plik „%s” na podstawie podanej etykiety poufności. Aby uniknąć utraty nieoczekiwanych zmian, przed kontynuowaniem utwórz kopię zapasową plików lub użyj systemu Git do śledzenia zmian.",
   "core.setSensitivityLabel.continue": "Ustaw",
   "core.provision.provision": "Inicjowanie ustanowienia",

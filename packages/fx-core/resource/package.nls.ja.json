@@ -10,7 +10,7 @@
   "core.addKnowledge.continue": "追加",
   "core.addSkill.confirm": "Microsoft 365 Agents Toolkit は、エージェント スキルを追加するために、\"%s\" フォルダー内のファイルを変更します。予期しない変更が失われないようにするには、続行する前にファイルをバックアップするか、Git を使用して変更を追跡します。",
   "core.addSkill.continue": "追加",
-  "core.addSkill.featureFlagDisabled": "エージェント スキルが有効になっていません。このプレビュー機能を有効にするには、環境変数 ATK_FRONTIER=true を設定してください。",
+  "core.addSkill.featureFlagDisabled": "エージェント スキルが有効になっていません。このプレビュー機能を有効にするには、環境変数 TEAMSFX_AGENT_SKILLS=true を設定してください。",
   "core.setSensitivityLabel.confirm": "Teams Toolkit は、指定した秘密度ラベルに基づいてファイル \"%s\" を変更します。予期しない変更が失われないようにするには、続行する前にファイルをバックアップするか、Git を使用して変更を追跡します。",
   "core.setSensitivityLabel.continue": "設定",
   "core.provision.provision": "準備",

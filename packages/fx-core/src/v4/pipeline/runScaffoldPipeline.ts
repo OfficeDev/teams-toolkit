@@ -6,6 +6,7 @@ import { Result, err, ok } from "neverthrow";
 import { ConditionalExpression, evaluateConditionalWhen } from "../expression/evaluateExpression";
 import { RenderVars, TemplateFileEntry } from "../model/dataModel";
 import { getLocalizedString } from "../../common/localizeUtils";
+import { prepareStep } from "./defineStep";
 
 /** v4 scaffold pipeline executor. See the run-scaffold-pipeline spec and ADR-0017. */
 
@@ -109,7 +110,12 @@ export interface StepContext {
 }
 
 /** An engine-registered, whitelist-dispatched post-render step. */
+export type PreparedStep = (
+  ctx: StepContext
+) => Result<void, FxError> | Promise<Result<void, FxError>>;
+
 export interface RegisteredStep {
+  prepare?(resolved: StepParams): Result<PreparedStep, string>;
   validateParams(resolved: StepParams): string | undefined;
   apply(
     resolved: StepParams,
@@ -368,17 +374,17 @@ export async function runScaffoldPipeline(
       return err(resolved.error);
     }
 
-    const violation = registered.validateParams(resolved.value);
-    if (violation !== undefined) {
+    const prepared = prepareStep(registered, resolved.value);
+    if (prepared.isErr()) {
       return err(
         systemError(
           PIPELINE_PARAMS_VIOLATION,
-          `Step '${step.step}' resolved parameters violate its schema: ${violation}. The build-time typed-context check (ADR-0016) should have caught this.`
+          `Step '${step.step}' resolved parameters violate its schema: ${prepared.error}. The build-time typed-context check (ADR-0016) should have caught this.`
         )
       );
     }
 
-    const applied = await registered.apply(resolved.value, ctx);
+    const applied = await prepared.value(ctx);
     if (applied.isErr()) {
       return err(applied.error);
     }

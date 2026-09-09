@@ -20,6 +20,7 @@ const CAPABILITY_FLOORS: Record<CapabilityKind, ReadonlyMap<string, string>> = {
     ["openapi/generate-teams-ai-custom-api-files", "5.20.0"],
   ]),
   provider: new Map([
+    ["create.languages", "6.12.0"],
     ["mcp.serverTypes", "5.20.0"],
     ["mcp.localServers", "5.20.0"],
     ["mcp.tools", "5.20.0"],
@@ -43,12 +44,26 @@ const CAPABILITY_OUTPUTS: Record<CapabilityKind, ReadonlyMap<string, readonly st
   provider: new Map([
     ["mcp.serverTypes", ["catalog"]],
     ["mcp.tools", ["toolsJson"]],
+    ["openapi.operations", ["apiSpecLocation"]],
   ]),
   validator: new Map(),
 };
 
+const CAPABILITY_OUTPUT_FLOORS: Record<CapabilityKind, ReadonlyMap<string, string>> = {
+  step: new Map(),
+  provider: new Map([["openapi.operations.apiSpecLocation", "6.12.0"]]),
+  validator: new Map(),
+};
+
 /** Return when a template-visible capability first became available in the engine. */
-export function templateCapabilityFloor(kind: CapabilityKind, id: string): string | undefined {
+export function templateCapabilityFloor(
+  kind: CapabilityKind,
+  id: string,
+  output?: string
+): string | undefined {
+  if (output !== undefined) {
+    return CAPABILITY_OUTPUT_FLOORS[kind].get(`${id}.${output}`) ?? CAPABILITY_FLOORS[kind].get(id);
+  }
   return CAPABILITY_FLOORS[kind].get(id);
 }
 

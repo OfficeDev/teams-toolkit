@@ -2,8 +2,10 @@
 // Licensed under the MIT license.
 
 import { FxError, SystemError } from "@microsoft/teamsfx-api";
-import { Result, err } from "neverthrow";
-import { RegisteredStep, StepContext, StepParams } from "../../pipeline/runScaffoldPipeline";
+import { Result, err, ok } from "neverthrow";
+import { RegisteredStep } from "../../pipeline/runScaffoldPipeline";
+import { defineStep } from "../../pipeline/defineStep";
+import { stringParam } from "../../pipeline/stepParams";
 
 /** Declarative Agent manifest mutation steps for modify flows. */
 
@@ -16,31 +18,24 @@ function systemError(name: string, message: string): SystemError {
   return new SystemError({ source: SOURCE, name, message });
 }
 
-function stringParam(params: StepParams, key: string): string | undefined {
-  const value = params[key];
-  return typeof value === "string" ? value : undefined;
-}
-
 /** Registered step for adding a rendered API plugin manifest as a DA action. */
-export const daActionRegisterPluginManifest: RegisteredStep = {
-  validateParams(resolved: StepParams): string | undefined {
-    if (stringParam(resolved, "teamsManifestPath") === undefined) {
-      return "missing string parameter 'teamsManifestPath'";
-    }
-    if (stringParam(resolved, "pluginManifestPath") === undefined) {
-      return "missing string parameter 'pluginManifestPath'";
-    }
-    return undefined;
-  },
-  apply(resolved: StepParams, ctx: StepContext): Result<void, FxError> {
+export const daActionRegisterPluginManifest: RegisteredStep = defineStep({
+  parse(resolved): Result<{ teamsManifestPath: string; pluginManifestPath: string }, string> {
     const teamsManifestPath = stringParam(resolved, "teamsManifestPath");
-    const pluginManifestPath = stringParam(resolved, "pluginManifestPath");
-    if (teamsManifestPath === undefined || pluginManifestPath === undefined) {
-      return err(systemError("DaActionRegisterParams", "resolved parameters are not all strings"));
+    if (teamsManifestPath === undefined) {
+      return err("missing string parameter 'teamsManifestPath'");
     }
-
+    const pluginManifestPath = stringParam(resolved, "pluginManifestPath");
+    if (pluginManifestPath === undefined) {
+      return err("missing string parameter 'pluginManifestPath'");
+    }
+    return ok({ teamsManifestPath, pluginManifestPath });
+  },
+  invalidParams: () =>
+    systemError("DaActionRegisterParams", "resolved parameters are not all strings"),
+  apply({ teamsManifestPath, pluginManifestPath }, ctx): Result<void, FxError> {
     return ctx
       .manifestWrapper("declarativeAgent")
       .registerDeclarativeAgentAction(teamsManifestPath, pluginManifestPath);
   },
-};
+});

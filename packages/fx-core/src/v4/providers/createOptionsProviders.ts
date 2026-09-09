@@ -17,6 +17,11 @@ import { type ODRServer } from "../../common/odrProvider";
 import { SearchOpenAPISpecResult } from "../../common/kiotaClient";
 import { getParserOptions } from "../../common/openApiParserOptions";
 import { parseMcpStaticToolsJson } from "../mcp/mcpStaticTools";
+import {
+  CREATE_LANGUAGES_PROVIDER,
+  CreateLanguageContext,
+  createLanguageOptionsProvider,
+} from "./createLanguageOptionsProvider";
 
 const remoteMcpServerType = {
   id: "remote",
@@ -126,6 +131,7 @@ function sortOperations(operations: ListAPIInfo[]): ListAPIInfo[] {
 }
 
 export const openApiOperationsProvider: OptionsProvider = {
+  derivedSchema: ["apiSpecLocation"],
   async fetch(params) {
     const apiSpecLocation = params.apiSpecLocation?.trim();
     if (!apiSpecLocation) {
@@ -169,6 +175,7 @@ export const openApiOperationsProvider: OptionsProvider = {
         groupName: operation.api.toUpperCase().split(" ")[0],
         detail: operationDetail(operation),
       })),
+      derived: { apiSpecLocation },
     };
   },
 };
@@ -288,10 +295,12 @@ export function createMcpToolsProvider(
 export function createDefaultCreateOptionsProviders(
   fetchTools: (serverUrl: string) => Promise<MCPFetchResult>,
   listLocalMcpServers: () => Promise<ODRServer[]>,
-  searchApiSpec: (query: string) => Promise<SearchOpenAPISpecResult[]> = () => Promise.resolve([])
+  searchApiSpec: (query: string) => Promise<SearchOpenAPISpecResult[]> = () => Promise.resolve([]),
+  languageContext: CreateLanguageContext = {}
 ): Record<string, OptionsProvider> {
   const localServers = createLocalServerCache(listLocalMcpServers);
   return {
+    [CREATE_LANGUAGES_PROVIDER]: createLanguageOptionsProvider(languageContext),
     "mcp.serverTypes": createMcpServerTypesProvider(localServers),
     "mcp.localServers": createLocalMcpServersProvider(localServers),
     "mcp.tools": createMcpToolsProvider(fetchTools),

@@ -102,12 +102,16 @@ function buildFloor(): Buffer {
   return Buffer.from(cachedFloor);
 }
 
-function buildLanguageFloor(languages = ["typescript", "csharp"]): Buffer {
+function buildLanguageFloor(
+  languages = ["typescript", "csharp"],
+  languageOptions?: unknown[],
+  templateId = "test/language-axis"
+): Buffer {
   const zip = new AdmZip();
-  const root = "v4/create/test/language-axis";
+  const root = `v4/create/${templateId}`;
   zip.addFile(
     `${root}/descriptor.json`,
-    Buffer.from(JSON.stringify({ id: "test/language-axis", languages }))
+    Buffer.from(JSON.stringify({ id: templateId, languages, languageOptions }))
   );
   zip.addFile(`${root}/questions.json`, Buffer.from(JSON.stringify({ questions: [] })));
   zip.addFile(`${root}/pipeline.json`, Buffer.from("{}"));
@@ -416,6 +420,20 @@ function optionId(option: string | SurfaceOptionItem): string {
 }
 
 describe("runCreateInputs (collect-create-inputs)", () => {
+  it("CLEAN-06: generic input composition does not synthesize capability-specific aliases", async () => {
+    const result = await runCreateInputs(
+      buildLanguageFloor(["common"]),
+      LANGUAGE_DA,
+      { selectOpenApiSpec: "an-unrelated-answer" },
+      asUI(new ScriptedUserInteraction({})),
+      { flagReader: () => false }
+    );
+    assert.deepEqual(result._unsafeUnwrap(), {
+      selectOpenApiSpec: "an-unrelated-answer",
+      surface: "vscode",
+    });
+  });
+
   it("CCI-00: metadata-only bytes drive Q2 language gating without content", async () => {
     const ui = new ScriptedUserInteraction({});
 
@@ -431,7 +449,7 @@ describe("runCreateInputs (collect-create-inputs)", () => {
     assert.deepEqual(ui.selectNames, []);
   });
 
-  it("CCI-25: threads baseStep + backable so Q2's first prompt shows Back and a back returns a typed outcome", async () => {
+  it("CLEAN-04/CCI-25: threads baseStep + backable so Q2's first prompt shows Back and a back returns a typed outcome", async () => {
     const ui = new ScriptedUserInteraction({ back: ["llmService"] });
     const res = await runCreateInputsWalk(buildFloor(), CUSTOM_COPILOT_BASIC, {}, asUI(ui), {
       flagReader: () => false,
@@ -491,6 +509,40 @@ describe("runCreateInputs (collect-create-inputs)", () => {
     }
     // mcpServerUrl is the first *visible* prompt, at baseStep + 1 = 4 (the skip left no step).
     assert.strictEqual(ui.lastInputConfig?.step, 4);
+  });
+
+  it("CLEAN-01: arbitrary template metadata controls localized language presentation", async () => {
+    const ui = new ScriptedUserInteraction({ select: { language: "python" } });
+    const result = await runCreateInputs(
+      buildLanguageFloor(
+        ["typescript", "python"],
+        [
+          {
+            id: "python",
+            description: "core.createProjectQuestion.option.description.preview",
+          },
+        ]
+      ),
+      LANGUAGE_DA,
+      {},
+      asUI(ui),
+      { flagReader: () => false }
+    );
+    assert.isTrue(result.isOk());
+    assert.equal(selectOptionAt(ui.lastSelectConfig, 1).description, "Preview");
+  });
+
+  it("CLEAN-07: known template IDs without metadata have default presentation", async () => {
+    const ui = new ScriptedUserInteraction({ select: { language: "python" } });
+    const result = await runCreateInputs(
+      buildLanguageFloor(["typescript", "python"], undefined, CUSTOM_COPILOT_BASIC.templateId),
+      CUSTOM_COPILOT_BASIC,
+      {},
+      asUI(ui),
+      { flagReader: () => false }
+    );
+    assert.isTrue(result.isOk());
+    assert.isUndefined(selectOptionAt(ui.lastSelectConfig, 1).description);
   });
 
   it("CCI-17: VS Code Teams Agents and Apps Python language option carries the v3 Preview description", async () => {
@@ -633,6 +685,7 @@ describe("runCreateInputs (collect-create-inputs)", () => {
       assert.deepEqual(res.value, {
         surface: "vscode",
         apiSpecLocation: OPENAPI_SPEC,
+        "derived.openapi.operations.apiSpecLocation": OPENAPI_SPEC,
         apiOperations: ["GET /repairs"],
       });
     }
@@ -698,7 +751,7 @@ describe("runCreateInputs (collect-create-inputs)", () => {
     });
   });
 
-  it("collects DA OpenAPI operations from a searched OpenAPI document", async () => {
+  it("CLEAN-06: collects searched OpenAPI operations without a surface answer repair", async () => {
     const ui = new ScriptedUserInteraction({
       select: { openApiSpecType: "search-api", selectOpenApiSpec: OPENAPI_SPEC },
       text: { searchOpenApiSpecQuery: "repairs" },
@@ -724,7 +777,8 @@ describe("runCreateInputs (collect-create-inputs)", () => {
       assert.equal(res.value.openApiSpecType, "search-api");
       assert.equal(res.value.searchOpenApiSpecQuery, "repairs");
       assert.equal(res.value.selectOpenApiSpec, OPENAPI_SPEC);
-      assert.equal(res.value.apiSpecLocation, OPENAPI_SPEC);
+      assert.isUndefined(res.value.apiSpecLocation);
+      assert.equal(res.value["derived.openapi.operations.apiSpecLocation"], OPENAPI_SPEC);
       assert.deepEqual(res.value.apiOperations, ["GET /repairs"]);
     }
     assert.deepEqual(ui.promptNames, [

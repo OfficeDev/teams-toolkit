@@ -121,8 +121,21 @@ On `err`:
 | INPUT-32 | L1   | a thin prompt driver returns a `singleSelect` id absent from the question's currently visible static options                                                                                                                                                     | collect       | the walk's authoritative option-membership validation rejects it with an `InputValidationFailed` `UserError`                                                                                                                                                                                                                                                         |
 | INPUT-33 | L1   | a thin prompt driver returns a provider-backed `multiSelect` containing an id absent from the resolved options                                                                                                                                                   | collect       | the walk rejects the whole selection with an `InputValidationFailed` `UserError` before provider-derived data or the answer is committed                                                                                                                                                                                                                             |
 | INPUT-34 | L1   | non-interactive mode uses a provider-backed `singleSelect` default absent from the provider's resolved options                                                                                                                                                   | collect       | rejected with an `InputValidationFailed` `UserError`; a valid provider-backed default resolves and merges the provider's declared derived data before continuing                                                                                                                                                                                                     |
+| INPUT-35 | L1 | A synthetic provider declares derived data and scalar/multi answers arrive by prefill, non-interactive default, or prompt | collect | All paths validate option membership and merge identical derived data exactly once; only actual prompts enter history. Runtime L1, purpose operation-integration, gate required, harness synthetic provider + scripted UI. |
+| INPUT-36 | L1 | A static singleton is auto-selected for a scalar or multi-select question | collect | Scalar validators remain authoritative, and multi-select retains string[] shape without a history entry. Runtime L1, purpose operation-integration, gate required, harness synthetic questions + scripted UI. |
 
 ## Flow
+
+### Unified answer acceptance
+
+Option-source preparation is shared by prefilled, defaulted, auto-selected, and
+prompted answers. One acceptance path checks the scalar validator (when applicable),
+option membership, and provider-derived schema before recording an answer. Both
+scalar and multi-select prompts share Back/history handling. Provider resolution
+remains lazy and cached per walk; condition-skipped questions do not fetch.
+Unique prefilled scalar declarations retain their validation-before-condition rule.
+This is an internal consolidation under INV-1, not a second state machine or a
+provider-specific hook.
 
 ```mermaid
 flowchart TD

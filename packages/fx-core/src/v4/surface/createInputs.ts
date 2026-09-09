@@ -17,6 +17,10 @@ import { openDeclarativePackageMetadata } from "../distribution/declarativePacka
 import { evaluateExpression } from "../expression/evaluateExpression";
 import { Answers, DeclarativeLocator } from "../model/dataModel";
 import { createDefaultCreateOptionsProviders } from "../providers/createOptionsProviders";
+import {
+  CREATE_LANGUAGES_PROVIDER,
+  resolveLanguageOptions,
+} from "../providers/createLanguageOptionsProvider";
 import { parseDeclaredKeys } from "../runtime/packageParse";
 import { createExpressionPort } from "../runtime/whitelist";
 import { createDefaultCreateInputValidators } from "../validators/createInputValidators";
@@ -25,57 +29,11 @@ import { createUiPromptUI } from "./uiPromptUI";
 
 /** Live create-path surface wiring for `collect-inputs`. See collect-create-inputs spec. */
 
-const TEAMS_AGENTS_AND_APPS_TEMPLATE_IDS = new Set([
-  "custom-copilot-basic",
-  "custom-copilot-rag-azure-ai-search",
-  "custom-copilot-rag-custom-api",
-  "custom-copilot-rag-customize",
-  "default-bot",
-  "default-message-extension",
-  "non-sso-tab",
-  "teams-collaborator-agent",
-]);
-
-function showsPythonPreview(templateId: string): boolean {
-  return TEAMS_AGENTS_AND_APPS_TEMPLATE_IDS.has(templateId);
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-/** Descriptor language axis, falling back to `["common"]`. */
-function descriptorLanguages(descriptor: unknown): string[] {
-  if (isRecord(descriptor) && Array.isArray(descriptor.languages)) {
-    const languages = descriptor.languages.filter(
-      (language): language is string => typeof language === "string"
-    );
-    if (languages.length > 0) {
-      return languages;
-    }
-  }
-  return ["common"];
-}
-
-/** v4-local copy of the CLI-only .NET feature flag name. */
-const CLI_DOTNET_FLAG = "TEAMSFX_CLI_DOTNET";
-
-/** The C# language id, surface-gated below. */
-const CSHARP_LANGUAGE = "csharp";
+export { gateLanguagesBySurface } from "../providers/createLanguageOptionsProvider";
 
 /** The default env-backed feature-flag reader (a flag is on iff its env var is exactly `"true"`). */
 function envFlagReader(name: string): boolean {
   return readBooleanFeatureFlag(name);
-}
-
-/** Gate `csharp` by surface and the .NET flag; other languages pass through. */
-export function gateLanguagesBySurface(
-  languages: string[],
-  surface: string,
-  flagReader: (name: string) => boolean
-): string[] {
-  const allowCsharp = surface !== "vscode" && flagReader(CLI_DOTNET_FLAG);
-  return allowCsharp ? languages : languages.filter((language) => language !== CSHARP_LANGUAGE);
 }
 
 /** The Q2 options schema: the declared identifier domain (`optionsSchema.properties` ids). */
@@ -130,27 +88,22 @@ export async function runCreateInputsWalk(
     return err(opened.error);
   }
   const descriptor = opened.value.descriptor;
-  const languages = gateLanguagesBySurface(
-    descriptorLanguages(descriptor),
-    deps.surface ?? "vscode",
-    deps.flagReader ?? envFlagReader
-  );
-
+  const surface = deps.surface ?? "vscode";
   const providers = {
     ...createDefaultCreateOptionsProviders(
       deps.fetchMcpTools ?? fetchMCPTools,
       deps.listLocalMcpServers ?? ODRProvider.listServers,
-      deps.searchOpenAPISpec ?? searchOpenAPISpec
+      deps.searchOpenAPISpec ?? searchOpenAPISpec,
+      { descriptor, surface, flagReader: deps.flagReader ?? envFlagReader }
     ),
     ...(deps.optionsProvider ?? {}),
   };
   const expressionPort = createExpressionPort(deps.flagReader);
-  const surface = deps.surface ?? "vscode";
-  const floorTail = await createFloorTail(
-    deps.inputs,
-    languages,
-    showsPythonPreview(locator.templateId)
-  );
+  const languages = await resolveLanguageOptions(providers[CREATE_LANGUAGES_PROVIDER]);
+  if (languages.isErr()) {
+    return err(languages.error);
+  }
+  const floorTail = await createFloorTail(deps.inputs, languages.value);
   if (floorTail.isErr()) {
     return err(floorTail.error);
   }
@@ -186,10 +139,6 @@ export async function runCreateInputsWalk(
   }
   const answers = walked.value.answers;
   delete answers.nonInteractive;
-  const selectedOpenApiSpec = answers.selectOpenApiSpec;
-  if (answers.apiSpecLocation === undefined && typeof selectedOpenApiSpec === "string") {
-    answers.apiSpecLocation = selectedOpenApiSpec;
-  }
   if (deps.inputs !== undefined) {
     const validation = await validateCreateFloorAnswers(deps.inputs, answers);
     if (validation.isErr()) {

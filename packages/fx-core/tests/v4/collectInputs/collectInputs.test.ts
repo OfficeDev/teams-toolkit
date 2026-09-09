@@ -243,6 +243,91 @@ function makePort(opts: {
 }
 
 describe("collectInputs (v4)", () => {
+  for (const type of ["singleSelect", "multiSelect"] satisfies QuestionSpec["type"][]) {
+    for (const mode of ["prefill", "default", "prompt"]) {
+      it(`INPUT-35: ${type} ${mode} shares derived merging and membership validation`, async () => {
+        const value = type === "multiSelect" ? ["one"] : "one";
+        const question: QuestionSpec = { name: "choice", type, optionsFrom: "synthetic" };
+        if (mode === "default") question.default = value;
+        const provider = new FakeProvider(
+          { options: [{ id: "one" }], derived: { context: "data" } },
+          ["context"]
+        );
+        const ui = new ScriptedUI({ choice: "one" }, { choice: ["one"] });
+        const result = await walkInputs(
+          [question],
+          {},
+          mode === "prefill"
+            ? { choice: value }
+            : mode === "default"
+              ? { nonInteractive: "true" }
+              : {},
+          makePort({ ui, providers: { synthetic: provider } })
+        );
+        const outcome = result._unsafeUnwrap();
+        if (outcome.kind !== "done") assert.fail("expected completed walk");
+        assert.deepEqual(outcome.answers.choice, value);
+        assert.equal(outcome.answers["derived.synthetic.context"], "data");
+        assert.equal(provider.fetchCount, 1);
+        assert.lengthOf(outcome.history, mode === "prompt" ? 1 : 0);
+        provider.fetchCount = 0;
+        const invalid = type === "multiSelect" ? ["missing"] : "missing";
+        const rejected = await collectInputs(
+          [{ ...question, default: invalid }],
+          {},
+          mode === "prefill"
+            ? { choice: invalid }
+            : mode === "default"
+              ? { nonInteractive: "true" }
+              : {},
+          makePort({
+            ui: new ScriptedUI({ choice: "missing" }, { choice: ["missing"] }),
+            providers: { synthetic: provider },
+          })
+        );
+        assert.equal(rejected._unsafeUnwrapErr().name, INPUT_VALIDATION_FAILED);
+      });
+    }
+  }
+
+  it("INPUT-36: static singleton multi-select preserves array shape and no history", async () => {
+    const result = await walkInputs(
+      [
+        {
+          name: "choice",
+          type: "multiSelect",
+          staticOptions: [{ id: "one" }],
+          skipSingleOption: true,
+        },
+      ],
+      {},
+      {},
+      makePort({ ui: new ScriptedUI({}) })
+    );
+    const outcome = result._unsafeUnwrap();
+    if (outcome.kind !== "done") assert.fail("expected completed walk");
+    assert.deepEqual(outcome.answers.choice, ["one"]);
+    assert.isEmpty(outcome.history);
+  });
+
+  it("INPUT-36: static singleton auto-selection does not bypass scalar validation", async () => {
+    const result = await collectInputs(
+      [
+        {
+          name: "choice",
+          type: "singleSelect",
+          staticOptions: [{ id: "one" }],
+          skipSingleOption: true,
+          validation: "reject",
+        },
+      ],
+      {},
+      {},
+      makePort({ ui: new ScriptedUI({}), validators: { reject: () => "invalid" } })
+    );
+    assert.equal(result._unsafeUnwrapErr().name, INPUT_VALIDATION_FAILED);
+  });
+
   it("INPUT-01: a question whose condition is false is skipped whole", async () => {
     const questions: QuestionSpec[] = [
       {

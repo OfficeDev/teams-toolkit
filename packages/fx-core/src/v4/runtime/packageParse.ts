@@ -5,6 +5,8 @@ import { FxError, SystemError } from "@microsoft/teamsfx-api";
 import { Result, err, ok } from "neverthrow";
 import { ConditionalExpression } from "../expression/evaluateExpression";
 import { ReplaceMapEntry } from "../renderContext/buildRenderContext";
+import { TemplateFileEntry } from "../model/dataModel";
+import { readDescriptorLanguages } from "../distribution/descriptorLanguages";
 import {
   Pipeline,
   PipelineRender,
@@ -16,6 +18,43 @@ import {
 /** Typed boundary parsers for descriptor and pipeline JSON. */
 
 const SOURCE = "Scaffold";
+
+export interface PreparedTemplate {
+  descriptor: {
+    id?: string;
+    minEngineVersion?: string;
+    languages: string[];
+    replaceMap: ReplaceMapEntry[];
+    declaredKeys: string[];
+  };
+  pipeline: Pipeline;
+  content: TemplateFileEntry[];
+}
+
+export function prepareTemplate(raw: {
+  descriptor: unknown;
+  pipeline: unknown;
+  content: TemplateFileEntry[];
+}): Result<PreparedTemplate, FxError> {
+  const replaceMap = parseReplaceMap(raw.descriptor);
+  if (replaceMap.isErr()) return err(replaceMap.error);
+  const pipeline = parsePipeline(raw.pipeline);
+  if (pipeline.isErr()) return err(pipeline.error);
+  const languages = readDescriptorLanguages(raw.descriptor);
+  if ("error" in languages) return err(systemError(languages.error));
+  const metadata = isRecord(raw.descriptor) ? raw.descriptor : {};
+  return ok({
+    descriptor: {
+      id: stringField(metadata, "id"),
+      minEngineVersion: stringField(metadata, "minEngineVersion"),
+      languages: languages.languages,
+      replaceMap: replaceMap.value,
+      declaredKeys: parseDeclaredKeys(raw.descriptor),
+    },
+    pipeline: pipeline.value,
+    content: raw.content,
+  });
+}
 
 /** `SystemError` name: a package file's shape is not the discriminated form (a build gate gap). */
 export const PACKAGE_PARSE_ERROR = "TemplatePackageParseError";
@@ -138,8 +177,7 @@ function toStepParams(raw: unknown): StepParams | undefined {
 
 function applyConditionalMetadata(
   item: Record<string, unknown>,
-  target: ConditionalExpression,
-  rejectMalformedWhen: boolean
+  target: ConditionalExpression
 ): boolean {
   const comment = stringField(item, "comment");
   if (comment !== undefined) {
@@ -148,7 +186,7 @@ function applyConditionalMetadata(
   const when = stringField(item, "when");
   if (when !== undefined) {
     target.when = when;
-  } else if (rejectMalformedWhen && item.when !== undefined) {
+  } else if (item.when !== undefined) {
     return false;
   }
   return true;
@@ -163,7 +201,7 @@ function toPipelineStep(item: unknown): PipelineStep | undefined {
     return undefined;
   }
   const result: PipelineStep = { step: stepName };
-  if (!applyConditionalMetadata(item, result, false)) {
+  if (!applyConditionalMetadata(item, result)) {
     return undefined;
   }
   if (item.with !== undefined) {
@@ -192,7 +230,7 @@ function toRenderFilter(item: unknown): RenderFilter | undefined {
     return undefined;
   }
   const result: RenderFilter = { exclude };
-  if (!applyConditionalMetadata(item, result, true)) {
+  if (!applyConditionalMetadata(item, result)) {
     return undefined;
   }
   return result;

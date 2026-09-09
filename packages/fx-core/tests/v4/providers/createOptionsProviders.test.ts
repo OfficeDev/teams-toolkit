@@ -17,6 +17,17 @@ import {
 } from "../../../src/v4/providers/createOptionsProviders";
 
 describe("create options providers (collect-create-inputs INV-9)", () => {
+  it("CLEAN-05: OpenAPI operation listing declares and returns its canonical source", async () => {
+    const source = path.resolve(__dirname, "../scenarios/fixtures/repairs-openapi.yaml");
+    const result = await openApiOperationsProvider.fetch({ apiSpecLocation: source });
+    assert.deepEqual(openApiOperationsProvider.derivedSchema, ["apiSpecLocation"]);
+    assert.deepEqual(result.derived, { apiSpecLocation: source });
+    assert.include(
+      result.options.map((option) => option.id),
+      "GET /repairs"
+    );
+  });
+
   const toolsJson = JSON.stringify({
     tools: [
       { name: "searchFlights", description: "Search flights", inputSchema: { type: "object" } },
@@ -44,6 +55,7 @@ describe("create options providers (collect-create-inputs INV-9)", () => {
     );
 
     assert.sameMembers(Object.keys(providers), [
+      "create.languages",
       "mcp.serverTypes",
       "mcp.localServers",
       "mcp.tools",

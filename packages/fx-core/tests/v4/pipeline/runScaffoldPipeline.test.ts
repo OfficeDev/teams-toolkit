@@ -11,6 +11,9 @@ import {
 } from "../../../src/v4/expression/evaluateExpression";
 import { RenderVars, TemplateFileEntry } from "../../../src/v4/model/dataModel";
 import { assert } from "vitest";
+import { defineStep } from "../../../src/v4/pipeline/defineStep";
+import { PACKAGE_PARSE_ERROR, prepareTemplate } from "../../../src/v4/runtime/packageParse";
+import { scaffold, scaffoldPrepared } from "../../../src/v4/runtime/scaffold";
 import {
   ManifestWrapper,
   PIPELINE_CROSS_STEP_REFERENCE,
@@ -159,6 +162,113 @@ function target(existing: string[] = []): TargetDir {
 }
 
 describe("runScaffoldPipeline (v4)", () => {
+  for (const when of [false, true, 0, null, [], {}]) {
+    it(`AC-28: rejects malformed step guard ${JSON.stringify(when)} before any side effects`, async () => {
+      const step = new FakeStep();
+      const { port, writes } = makePort({ steps: { synthetic: step } });
+      const result = await scaffold(
+        {
+          descriptor: {},
+          pipeline: { pipeline: "default", steps: [{ step: "synthetic", when }] },
+          content: [entry("render.txt", "must not be written")],
+          answers: {},
+          callerFloor: {},
+          targetDir: target(),
+        },
+        { exprPort: new ExprPort(), port }
+      );
+      assert.isTrue(result.isErr());
+      assert.equal(result._unsafeUnwrapErr().name, PACKAGE_PARSE_ERROR);
+      assert.equal(writes.size, 0);
+      assert.isEmpty(step.applied);
+    });
+  }
+
+  it("AC-28: prepared execution uses its typed snapshot without revisiting raw JSON", async () => {
+    const raw = {
+      descriptor: { replaceMap: [{ var: "Title", from: "title" }] },
+      pipeline: { pipeline: "default", steps: [] },
+      content: [entry("title.txt.tpl", "{{Title}}")],
+    };
+    const template = prepareTemplate(raw)._unsafeUnwrap();
+    raw.descriptor.replaceMap[0].from = "missing";
+    raw.pipeline.pipeline = "missing";
+    const { port, writes } = makePort();
+    const result = await scaffoldPrepared(
+      template,
+      {
+        answers: { title: "typed" },
+        callerFloor: {},
+        targetDir: target(),
+      },
+      { exprPort: new ExprPort(), port }
+    );
+    assert.isTrue(result.isOk());
+    assert.equal(writes.get("title.txt")?.toString(), "typed");
+  });
+
+  it("AC-29: typed steps parse once, preserve typed values, reject invalid and skip inactive params", async () => {
+    let parses = 0;
+    const parsedValues: Array<{ count: number }> = [];
+    const appliedValues: Array<{ count: number }> = [];
+    const typed = defineStep({
+      parse(params) {
+        parses++;
+        if (typeof params.count !== "string" || !/^\d+$/.test(params.count))
+          return err("count must be numeric");
+        const value = { count: Number(params.count) };
+        parsedValues.push(value);
+        return ok(value);
+      },
+      apply(value, ctx) {
+        assert.equal(ctx.read("render.txt")?.toString(), "rendered");
+        appliedValues.push(value);
+        return ok(undefined);
+      },
+      invalidParams: () =>
+        new SystemError({ source: "Test", name: "InvalidCount", message: "Invalid count" }),
+    });
+    const legacy = new FakeStep();
+    const { port } = makePort({ steps: { typed, legacy } });
+    const result = await runScaffoldPipeline(
+      {
+        pipeline: "default",
+        steps: [
+          { step: "typed", with: { count: "{{count}}" } },
+          { step: "typed", with: { count: false }, when: "featureFlag('TEST_OFF')" },
+          { step: "legacy" },
+          { step: "typed", with: { count: "9" } },
+        ],
+      },
+      [entry("render.txt", "rendered")],
+      { count: "7" },
+      target(),
+      port
+    );
+    assert.isTrue(result.isOk());
+    assert.equal(parses, 2);
+    assert.deepEqual(appliedValues, [{ count: 7 }, { count: 9 }]);
+    assert.strictEqual(appliedValues[0], parsedValues[0]);
+    assert.strictEqual(appliedValues[1], parsedValues[1]);
+    assert.lengthOf(legacy.applied, 1);
+    const invalid = await runScaffoldPipeline(
+      { pipeline: "default", steps: [{ step: "typed", with: { count: false } }] },
+      [],
+      {},
+      target(),
+      port
+    );
+    assert.equal(invalid._unsafeUnwrapErr().name, PIPELINE_PARAMS_VIOLATION);
+    assert.lengthOf(appliedValues, 2);
+    assert.equal(typed.validateParams({ count: false }), "count must be numeric");
+    assert.equal(
+      (await typed.apply({ count: false }, port))._unsafeUnwrapErr().name,
+      "InvalidCount"
+    );
+    assert.isUndefined(typed.validateParams({ count: "2" }));
+    assert.isTrue((await typed.apply({ count: "2" }, port)).isOk());
+  });
+
   it("AC-01: a known pipeline selects its orchestration; render then steps execute", async () => {
     const s1 = new FakeStep();
     const pipeline: Pipeline = { pipeline: "default", steps: [{ step: "s1" }] };

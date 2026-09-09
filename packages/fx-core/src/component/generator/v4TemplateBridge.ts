@@ -16,7 +16,7 @@ import {
   TemplateLocator,
   TemplateSource,
   createRealRuntime,
-  scaffold,
+  scaffoldPrepared,
 } from "../../v4";
 import * as bundledFloorMod from "../../v4/distribution/bundledFloor";
 import * as templatePackageMod from "../../v4/distribution/templatePackage";
@@ -271,11 +271,9 @@ export async function scaffoldDeclarativeFromV4Channel(
   // caller can put them on `CreateProjectResult.warnings` — that is what feeds the scaffolding
   // summary and the surfaces' post-create notifications.
   const warnings: Warning[] = [];
-  const result = await scaffold(
+  const result = await scaffoldPrepared(
+    loaded.value.template,
     {
-      descriptor: loaded.value.descriptor,
-      pipeline: loaded.value.pipeline,
-      content: loaded.value.content,
       answers,
       callerFloor,
       targetDir: { path: context.destination, existing },

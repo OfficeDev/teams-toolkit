@@ -110,6 +110,22 @@ in full, `m365agents.yml` as the auth-less skeleton). The `modify` pipeline adds
 
 ## Consequences
 
+### Typed execution boundary (2026-09-09)
+
+Package loading converts descriptor render inputs and pipeline JSON into a typed
+execution plan once. Raw descriptor metadata may remain available to question and
+distribution consumers; execution consumes the plan, not that raw metadata.
+The existing raw scaffold entry remains a compatibility adapter to the same parser
+and typed executor. This does not replace archive schema/capability validation.
+
+Registered steps may expose `prepare(resolved)` returning either a parameter
+violation or an executable closure holding the parsed domain parameters. A shared
+typed binding constructs this closure from the step-owned parser and apply
+function. The executor does not inspect those domain parameters. Existing
+`validateParams`/`apply` callers remain supported; pipeline execution prefers
+`prepare` so it parses exactly once per active invocation. There is no global
+parameter cache, new template dialect, or change to render-before-step ordering.
+
 - **New constraints (invariants 5–7):** domain-typed step naming + mandatory
   manifest-wrapper routing; `pipeline.pipeline ∈ whitelist`; `steps[].step ∈
   whitelist`, each step's `when` using the shared closed-expression grammar and

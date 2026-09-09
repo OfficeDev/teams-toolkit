@@ -232,7 +232,7 @@
       "parameters": {
         "button": "left",
         "x": 974,
-        "y": 572
+        "y": 457
       },
       "description": "Click the \"Sign in\" button in the bottom-right Microsoft 365 account notification to open the Microsoft 365 developer sandbox sign-in dialog.",
       "content_refs": [],

@@ -188,6 +188,20 @@ describe("teamsApp/create", async () => {
     expect(createAppSpy).not.toHaveBeenCalled();
   });
 
+  it("preserves a typed error when existing app lookup fails", async () => {
+    restoreEnv = mockedEnv({ TEAMS_APP_ID: appId });
+    const lookupError = new UserError("source", "LookupFailed", "lookup failed", "lookup failed");
+    vi.spyOn(teamsDevPortalClient, "getApp").mockRejectedValue(lookupError);
+
+    const result = (await teamsAppDriver.execute({ name: appDef.appName! }, mockedDriverContext))
+      .result;
+
+    chai.assert.isTrue(result.isErr());
+    if (result.isErr()) {
+      chai.assert.strictEqual(result.error, lookupError);
+    }
+  });
+
   it("reuses the created app when provision is retried", async () => {
     const args: CreateTeamsAppArgs = { name: appDef.appName! };
     const createAppSpy = vi.spyOn(teamsDevPortalClient, "createApp").mockResolvedValue(appDef);

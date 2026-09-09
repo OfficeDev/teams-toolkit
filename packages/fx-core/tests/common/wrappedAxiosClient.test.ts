@@ -172,8 +172,16 @@ describe("Wrapped Axios Client Test", () => {
 
   it.each([
     ["/api/appdefinitions/v2/import", "POST", APP_STUDIO_API_NAMES.CREATE_APP],
+    ["/api/appdefinitions/manifest", "GET", APP_STUDIO_API_NAMES.EXISTS_IN_TENANTS],
+    ["/api/appdefinitions/app-id/manifest", "GET", APP_STUDIO_API_NAMES.GET_APP_PACKAGE],
+    ["/api/appdefinitions/app-id/owner", "POST", APP_STUDIO_API_NAMES.UPDATE_OWNER],
     ["/api/appdefinitions/app-id", "GET", APP_STUDIO_API_NAMES.GET_APP],
     ["/api/appdefinitions/app-id", "DELETE", APP_STUDIO_API_NAMES.DELETE_APP],
+    ["/api/appdefinitions", "GET", APP_STUDIO_API_NAMES.LIST_APPS],
+    ["/api/botframework/bot-id", "GET", APP_STUDIO_API_NAMES.GET_BOT],
+    ["/api/botframework/bot-id", "POST", APP_STUDIO_API_NAMES.UPDATE_BOT],
+    ["/api/botframework/bot-id", "DELETE", APP_STUDIO_API_NAMES.DELETE_BOT],
+    ["/api/botframework", "GET", APP_STUDIO_API_NAMES.LIST_BOT],
     ["/api/botframework", "POST", APP_STUDIO_API_NAMES.CREATE_BOT],
     ["/v1.0/apps/app-id/apppackage", "PUT", APP_STUDIO_API_NAMES.UPDATE_APP],
     ["/v1.0/apps/app-id", "GET", APP_STUDIO_API_NAMES.GET_APP],

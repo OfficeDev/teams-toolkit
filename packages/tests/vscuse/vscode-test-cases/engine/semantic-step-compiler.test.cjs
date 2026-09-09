@@ -65,6 +65,166 @@ async function compileFixture(fileName, transform) {
   });
 }
 
+const copilotLicenseSource = `version: 1
+cases:
+  - id: feature-check-copilot-license-enabled
+    scenarioId: SCN-CHECK-COPILOT-LICENSE-ENABLED
+    workItemIds: [28202384]
+    steps: [license]
+steps:
+  license:
+    type: checkCopilotLicense
+    with:
+      account: "\${{env:M365_ACCOUNT_NAME_EnableCopilotAccess}}"
+      password: "\${{secret:M365_ACCOUNT_PASSWORD_EnableCopilotAccess}}"
+`;
+
+test("VCB-201: standalone Copilot license check owns its walkthrough and protected account", () => {
+  const compile = (sourceText) =>
+    compileCaseBundle({
+      compileStep: createSemanticStepCompiler(),
+      sourcePath: "cases/feature-check-copilot-license-enabled.yml",
+      sourceText,
+    });
+  const result = compile(copilotLicenseSource);
+  assert.equal(result.ok, true, result.diagnostics?.[0]?.code);
+  const generated = result.value[0];
+  assert.equal(
+    generated.fileName,
+    "feature-check-copilot-license-enabled.json",
+  );
+  assert.equal(generated.templateId, "none");
+  assert.equal(generated.plan.plan_metadata.description.workitem, "28202384");
+  assert.ok(generated.plan.plan_metadata.tags.includes("template_id:none"));
+  const serialized = JSON.stringify(generated.plan);
+  assert.match(serialized, /Build a Declarative Agent/);
+  assert.match(serialized, /Check Copilot License/);
+  assert.match(
+    serialized,
+    /Your Microsoft 365 account has Copilot access enabled/,
+  );
+  assert.doesNotMatch(serialized, /var:app_name|Sign in to Azure/);
+  const licenseSteps = generated.plan.steps;
+  const boundaries = [
+    "_checkSignedOut_",
+    "_showNotifications_",
+    "_assertNotification_",
+    "_focusNotificationSignIn_",
+    "_assertNotificationSignIn_",
+    "_activateNotificationSignIn_",
+    "_assertSignIn_",
+    "_signIn_",
+    "_assertEmail_",
+    "_typeAccount_",
+    "_assertPassword_",
+    "_typePassword_",
+    "_assertCallback_",
+    "_closeBrowser_",
+    "_closeNotifications_",
+    "_assertReopened_",
+    "_checkSignedIn_",
+    "_assertEnabled_",
+  ].map((boundary) =>
+    licenseSteps.findIndex((step) => step.step_id.includes(boundary)),
+  );
+  assert.ok(
+    boundaries.every(
+      (index, offset) =>
+        index >= 0 && (offset === 0 || index > boundaries[offset - 1]),
+    ),
+  );
+  assert.match(serialized, /Notifications: Show Notifications/);
+  assert.doesNotMatch(serialized, /Email, phone, or Skype/);
+  assert.ok(
+    generated.plan.steps.some(
+      (step) =>
+        step.parameters.text ===
+        "${{env:M365_ACCOUNT_NAME_EnableCopilotAccess}}",
+    ),
+  );
+  assert.ok(
+    generated.plan.steps.some(
+      (step) =>
+        step.parameters.text ===
+        "${{secret:M365_ACCOUNT_PASSWORD_EnableCopilotAccess}}",
+    ),
+  );
+  for (const invalid of [
+    copilotLicenseSource.replace("[license]", "[license, license]"),
+    copilotLicenseSource.replace(
+      "M365_ACCOUNT_NAME_EnableCopilotAccess",
+      "M365_ACCOUNT_NAME",
+    ),
+    copilotLicenseSource.replace(
+      "secret:M365_ACCOUNT_PASSWORD_EnableCopilotAccess",
+      "env:M365_ACCOUNT_PASSWORD_EnableCopilotAccess",
+    ),
+    copilotLicenseSource.replace(
+      "    with:\n",
+      "    with:\n      extra: true\n",
+    ),
+    copilotLicenseSource.replace("[license]", "[license, login]") +
+      "  login:\n    type: login\n    with: {}\n",
+    copilotLicenseSource.replace("[license]", "[scaffold, license]") +
+      "  scaffold:\n    type: scaffold\n    with:\n      template: da/no-action\n      answers: []\n",
+  ]) {
+    assert.equal(compile(invalid).ok, false);
+  }
+});
+
+test("VCB-202: verified standalone Copilot license case replaces its legacy with existing CI credentials", async () => {
+  const result = await compileFixture(
+    "feature-check-copilot-license-enabled.yml",
+    (sourceText) => sourceText,
+  );
+  assert.equal(result.ok, true, result.diagnostics?.[0]?.code);
+  assert.equal(result.value.length, 1);
+  const generated = result.value[0];
+  assert.equal(
+    generated.fileName,
+    "feature-check-copilot-license-enabled.json",
+  );
+  assert.equal(generated.plan.plan_metadata.description.workitem, "28202384");
+  const yaml = require("yaml");
+  const repositoryRoot = path.resolve(casesDirectory, "../../../../..");
+  const workflow = yaml.parse(
+    await fs.readFile(
+      path.join(repositoryRoot, ".github/workflows/ui-test-vscuse-common.yml"),
+      "utf8",
+    ),
+  );
+  const job = Object.values(workflow.jobs).find(
+    (entry) => entry.environment === "engineering" && entry.env?.M365_USERNAMES,
+  );
+  assert.equal(
+    job.env.M365_ACCOUNT_NAME_EnableCopilotAccess,
+    "${{ secrets.TEST_TENANT_M365_ACCOUNT_NAME }}",
+  );
+  assert.equal(
+    job.env.M365_ACCOUNT_PASSWORD_EnableCopilotAccess,
+    "${{ secrets.TEST_TENANT_M365_ACCOUNT_PASSWORD }}",
+  );
+  const legacy = "Feature_Check_Copilot_License_Enabled.json";
+  assert.equal(
+    fsSync.existsSync(path.join(casesDirectory, "..", "plans", legacy)),
+    false,
+  );
+  const mapping = await fs.readFile(
+    path.join(casesDirectory, "legacy-case-mapping.md"),
+    "utf8",
+  );
+  assert.ok(
+    mapping
+      .split("\n")
+      .some(
+        (line) =>
+          line.includes(legacy) &&
+          line.includes(generated.fileName) &&
+          line.includes("| Full |"),
+      ),
+  );
+});
+
 test("VCB-128: numeric work item IDs remain distinct from scenario metadata", () => {
   const sourceText = `version: 1
 cases:
@@ -185,7 +345,7 @@ test("VCB-34: semantic compiler does not read external template contracts", asyn
   }
 });
 
-test("VCB-34: default setup compiles the checked-in YAML sources into 189 plans", async (context) => {
+test("VCB-34: default setup compiles the checked-in YAML sources into 193 plans", async (context) => {
   const plansDirectory = await fs.mkdtemp(
     path.join(os.tmpdir(), "vscuse-generated-"),
   );
@@ -198,9 +358,9 @@ test("VCB-34: default setup compiles the checked-in YAML sources into 189 plans"
   });
 
   assert.equal(first.ok, true);
-  assert.equal(first.value.files.length, 189);
+  assert.equal(first.value.files.length, 193);
   const generatedFiles = first.value.files;
-  assert.equal(generatedFiles.length, 189);
+  assert.equal(generatedFiles.length, 193);
   assert.equal(
     generatedFiles.includes(
       "da-api-plugin-from-existing-api--da-api-plugin-from-existing-api-no-auth.json",
@@ -253,6 +413,13 @@ test("generated plans define app_name before reading it", async (context) => {
       "utf8",
     );
     const firstReference = planText.indexOf("${{var:app_name");
+    if (fileName === "feature-check-copilot-license-enabled.json") {
+      assert.equal(firstReference, -1);
+      assert.ok(
+        JSON.parse(planText).plan_metadata.tags.includes("template_id:none"),
+      );
+      continue;
+    }
     assert.notEqual(firstReference, -1, fileName);
     assert.equal(
       planText
@@ -6767,7 +6934,7 @@ test("VCB-152: packageApp preserves the recorded local package flow and rejects 
   }
 });
 
-test("VCB-165 VCB-195: packageApp prepares a configured TypeSpec action before packaging and provision", async () => {
+test("VCB-165 VCB-203: packageApp prepares a configured TypeSpec action before packaging and provision", async () => {
   const sourceText = `version: 1
 cases:
   - id: typespec-package
@@ -10428,6 +10595,460 @@ test("VCB-188: deferred features verify installed Python requirements", async ()
   }
 });
 
+const noSubscriptionSource = `version: 1
+cases:
+  - id: feature-sign-in-no-subscription
+    scenarioId: SCN-AZURE-SIGN-IN-NO-SUBSCRIPTION
+    workItemIds: [36090032]
+    steps: [scaffold, check, login]
+steps:
+  scaffold:
+    type: scaffold
+    with:
+      template: da/no-action
+      answers:
+        - question: projectType
+          value: copilot-agent-type
+        - question: daTemplate
+          value: no-action
+        - question: workspaceFolder
+          value: default
+        - question: appName
+          type: text
+          value: "\${{var:app_name:vscuse_app_#####}}"
+  check:
+    type: checks
+    with:
+      - type: file
+        path: appPackage/declarativeAgent.json
+        expect:
+          exists: true
+  login:
+    type: login
+    with:
+      type: azure
+      account: "\${{env:AZURE_NO_SUB_ACCOUNT_NAME}}"
+      password: "\${{secret:M365_ACCOUNT_PASSWORD}}"
+      subscriptions: none
+`;
+
+test("VCB-198: no-subscription Azure login verifies its dedicated fixture before UI login", () => {
+  const compile = (sourceText) =>
+    compileCaseBundle({
+      compileStep: createSemanticStepCompiler(),
+      sourcePath: "cases/no-subscription.yml",
+      sourceText,
+    });
+  const result = compile(noSubscriptionSource);
+  assert.equal(result.ok, true, result.diagnostics?.[0]?.code);
+  const steps = result.value[0].plan.steps;
+  const fixtureIndex = steps.findIndex((step) =>
+    step.step_id.startsWith("step_verifyNoAzureSubscriptions_"),
+  );
+  const loginIndex = steps.findIndex((step) =>
+    step.step_id.startsWith("step_signInAzure_"),
+  );
+  assert.ok(fixtureIndex >= 0 && fixtureIndex < loginIndex);
+  assert.match(
+    steps[fixtureIndex].description,
+    /execute the supplied generated bash script exactly as authored/,
+  );
+  assert.equal(steps[fixtureIndex].continue_on_error, "false");
+  assert.match(
+    steps[fixtureIndex].parameters.sample,
+    /AZURE_NO_SUB_ACCOUNT_NAME/,
+  );
+  assert.match(steps[fixtureIndex].parameters.sample, /M365_ACCOUNT_PASSWORD/);
+  assert.ok(
+    steps[fixtureIndex].parameters.sample.startsWith(
+      "=== Generated Script ===\nLanguage: bash\n\n```bash\n",
+    ),
+  );
+  assert.ok(steps[fixtureIndex].parameters.sample.endsWith("\n```"));
+  assert.ok(
+    steps.some(
+      (step) => step.parameters.text === "${{env:AZURE_NO_SUB_ACCOUNT_NAME}}",
+    ),
+  );
+  assert.ok(
+    steps.some(
+      (step) => step.parameters.text === "${{secret:M365_ACCOUNT_PASSWORD}}",
+    ),
+  );
+  assert.match(steps.at(-1).description, /ACCOUNTS/);
+  assert.match(steps.at(-1).description, /AZURE_NO_SUB_ACCOUNT_NAME/);
+
+  for (const [before, after] of [
+    ["subscriptions: none", "subscriptions: any"],
+    ["subscriptions: none", "subscriptions: none\n      unexpected: true"],
+    ["type: azure", "type: m365"],
+    ["template: da/no-action", "template: da/typespec"],
+    ["AZURE_NO_SUB_ACCOUNT_NAME", "AZURE_ACCOUNT_NAME"],
+    ["${{env:AZURE_NO_SUB_ACCOUNT_NAME}}", "literal@example.test"],
+    ["${{secret:M365_ACCOUNT_PASSWORD}}", "literal"],
+    ["M365_ACCOUNT_PASSWORD", "AZURE_ACCOUNT_PASSWORD"],
+    ["[scaffold, check, login]", "[scaffold, check, login, login]"],
+  ]) {
+    const invalid = compile(noSubscriptionSource.replace(before, after));
+    assert.equal(invalid.ok, false, before);
+    assert.equal(
+      invalid.diagnostics[0].code,
+      "VCB_NO_SUBSCRIPTION_INPUT_INVALID",
+      before,
+    );
+  }
+  const unchecked = compile(
+    noSubscriptionSource.replace(
+      "[scaffold, check, login]",
+      "[scaffold, login, check]",
+    ),
+  );
+  assert.equal(unchecked.ok, false);
+  assert.equal(unchecked.diagnostics[0].code, "VCB_OPERATION_ORDER");
+  const ordinary = compile(
+    noSubscriptionSource
+      .replace("AZURE_NO_SUB_ACCOUNT_NAME", "AZURE_ACCOUNT_NAME")
+      .replace("      subscriptions: none\n", ""),
+  );
+  assert.equal(ordinary.ok, true);
+  assert.equal(
+    ordinary.value[0].plan.steps.some((step) =>
+      step.step_id.startsWith("step_verifyNoAzureSubscriptions_"),
+    ),
+    false,
+  );
+});
+
+test("VCB-199: dedicated no-subscription feature receives its username and shared password from CI", async () => {
+  const result = await compileFixture(
+    "feature-sign-in-no-subscription.yml",
+    (sourceText) => sourceText,
+  );
+  assert.equal(result.ok, true, result.diagnostics?.[0]?.code);
+  assert.equal(result.value.length, 1);
+  assert.equal(
+    result.value[0].fileName,
+    "feature-sign-in-no-subscription.json",
+  );
+  assert.equal(
+    result.value[0].plan.plan_metadata.description.workitem,
+    "36090032",
+  );
+  const yaml = require("yaml");
+  const repositoryRoot = path.resolve(casesDirectory, "../../../../..");
+  const workflow = yaml.parse(
+    await fs.readFile(
+      path.join(repositoryRoot, ".github/workflows/ui-test-vscuse-common.yml"),
+      "utf8",
+    ),
+  );
+  const job = Object.values(workflow.jobs).find(
+    (entry) => entry.environment === "engineering" && entry.env?.M365_USERNAMES,
+  );
+  assert.equal(
+    job.env.AZURE_NO_SUB_ACCOUNT_NAME,
+    "${{ vars.AZURE_NO_SUB_ACCOUNT_NAME }}",
+  );
+  assert.equal(
+    job.env.M365_ACCOUNT_PASSWORD,
+    "${{ secrets.TEST_TENANT_M365_ACCOUNT_PASSWORD }}",
+  );
+  const fixtureGate = job.steps.find(
+    (step) => step.name === "Validate no-subscription fixture contract",
+  );
+  assert.equal(
+    fixtureGate.if,
+    "${{ matrix.test_plan == 'feature-sign-in-no-subscription' }}",
+  );
+  assert.match(fixtureGate.run, /no-subscription-fixture\.test\.py/);
+  assert.match(fixtureGate.run, /\$AZURE_NO_SUB_ACCOUNT_NAME/);
+  assert.match(fixtureGate.run, /\$M365_ACCOUNT_PASSWORD/);
+  const config = yaml.parse(
+    await fs.readFile(path.join(casesDirectory, "../config.yaml"), "utf8"),
+  );
+  assert.equal(
+    config.docker.environment.AZURE_NO_SUB_ACCOUNT_NAME,
+    "${AZURE_NO_SUB_ACCOUNT_NAME}",
+  );
+  assert.equal(
+    config.docker.environment.M365_ACCOUNT_PASSWORD,
+    "${M365_ACCOUNT_PASSWORD}",
+  );
+  const featureWorkflow = yaml.parse(
+    await fs.readFile(
+      path.join(
+        repositoryRoot,
+        ".github/workflows/ui-test-vscuse-features.yml",
+      ),
+      "utf8",
+    ),
+  );
+  assert.ok(
+    featureWorkflow.jobs.run.with.plan_find_args.includes('"feature-*.json"'),
+  );
+});
+
+test("VCB-200: verified no-subscription sign-in retires only its legacy", async () => {
+  const result = await compileFixture(
+    "feature-sign-in-no-subscription.yml",
+    (sourceText) => sourceText,
+  );
+  assert.equal(result.ok, true, result.diagnostics?.[0]?.code);
+  assert.equal(result.value.length, 1);
+  const generated = result.value[0];
+  assert.equal(generated.fileName, "feature-sign-in-no-subscription.json");
+  assert.equal(generated.plan.plan_metadata.description.workitem, "36090032");
+  const legacy = "Feature_Sign_In_No_Subscription.json";
+  assert.equal(
+    fsSync.existsSync(path.join(casesDirectory, "..", "plans", legacy)),
+    false,
+  );
+  const mapping = await fs.readFile(
+    path.join(casesDirectory, "legacy-case-mapping.md"),
+    "utf8",
+  );
+  assert.equal(
+    mapping
+      .split("\n")
+      .some(
+        (line) =>
+          line.includes(legacy) &&
+          line.includes(generated.fileName) &&
+          line.includes("| Full |"),
+      ),
+    true,
+  );
+  await fs.access(
+    path.join(
+      casesDirectory,
+      "../plans/feature-check-copilot-license-enabled.json",
+    ),
+  );
+});
+
+test("VCB-195: tenant mismatch requires a closed session and explicit recovery outcome", async () => {
+  const fileName = "feature-local-debug-tenant-mismatch.yml";
+  const result = await compileFixture(fileName, (sourceText) => sourceText);
+  assert.equal(result.ok, true, result.diagnostics?.[0]?.code);
+  const cancel = result.value.find((entry) =>
+    entry.caseId.endsWith("-cancel"),
+  ).plan;
+  const continued = result.value.find((entry) =>
+    entry.caseId.endsWith("-continue"),
+  ).plan;
+  for (const plan of [cancel, continued]) {
+    const switchIndex = plan.steps.findIndex((step) =>
+      step.step_id.startsWith("step_signOutM365_"),
+    );
+    const stoppedIndex = plan.steps.findIndex((step) =>
+      step.step_id.startsWith("step_assertDebugStopped_"),
+    );
+    const warningIndex = plan.steps.findIndex((step) =>
+      step.step_id.startsWith("step_assertTenantMismatch_"),
+    );
+    assert.ok(stoppedIndex >= 0 && stoppedIndex < switchIndex);
+    assert.ok(warningIndex > switchIndex);
+    assert.ok(
+      plan.steps.some(
+        (step) => step.parameters.text === "${{env:MS_AZURE_ACCOUNT_NAME}}",
+      ),
+    );
+    assert.ok(
+      plan.steps.some(
+        (step) =>
+          step.parameters.text === "${{secret:MS_AZURE_ACCOUNT_PASSWORD}}",
+      ),
+    );
+  }
+  assert.ok(
+    cancel.steps.some((step) =>
+      step.step_id.startsWith("step_assertLaunchCancelled_"),
+    ),
+  );
+  const cancelledOutcome = cancel.steps.find((step) =>
+    step.step_id.startsWith("step_assertLaunchCancelled_"),
+  );
+  assert.ok(cancelledOutcome.description.includes("mismatch dialog is closed"));
+  assert.ok(cancelledOutcome.description.includes("No Microsoft 365 sign-out"));
+  assert.doesNotMatch(
+    cancelledOutcome.description,
+    /task is canceled|User Cancel/,
+  );
+  assert.equal(
+    cancel.steps.filter((step) =>
+      step.step_id.startsWith("step_assertDebugStopped_"),
+    ).length,
+    2,
+  );
+  assert.equal(
+    cancel.steps.some((step) => step.parameters.text === "test"),
+    false,
+  );
+  const recoveryIndex = continued.steps.findIndex((step) =>
+    step.step_id.startsWith("step_reauthenticateM365_"),
+  );
+  assert.ok(
+    recoveryIndex >
+      continued.steps.findIndex((step) =>
+        step.step_id.startsWith("step_assertTenantMismatch_"),
+      ),
+  );
+  assert.ok(
+    continued.steps.findIndex((step) => step.parameters.text === "test") >
+      recoveryIndex,
+  );
+  const passwordGuardIndex = continued.steps.findIndex((step) =>
+    step.step_id.startsWith("step_reauthenticateM365_assertPassword_"),
+  );
+  assert.ok(passwordGuardIndex > recoveryIndex);
+  assert.ok(
+    continued.steps[passwordGuardIndex].description.includes(
+      "${{env:M365_ACCOUNT_NAME}}",
+    ),
+  );
+  assert.equal(
+    continued.steps[passwordGuardIndex + 1].parameters.text,
+    "${{secret:M365_ACCOUNT_PASSWORD}}",
+  );
+
+  for (const transform of [
+    (sourceText) => sourceText.replaceAll("        close-debug-browser,\n", ""),
+    (sourceText) =>
+      sourceText.replace("        cancel-mismatched-launch,\n", ""),
+    (sourceText) =>
+      sourceText.replaceAll(
+        "        switch-m365-account,",
+        "        switch-m365-account,\n        login-m365,",
+      ),
+    (sourceText) =>
+      sourceText.replaceAll(
+        "        switch-m365-account,",
+        "        switch-m365-account,\n        switch-m365-account,",
+      ),
+    (sourceText) =>
+      sourceText.replace(
+        'account: "${{env:MS_AZURE_ACCOUNT_NAME}}"',
+        "account: literal@example.test",
+      ),
+    (sourceText) =>
+      sourceText.replace(
+        'password: "${{secret:MS_AZURE_ACCOUNT_PASSWORD}}"',
+        "password: literal",
+      ),
+    (sourceText) =>
+      sourceText.replace(
+        'account: "${{env:MS_AZURE_ACCOUNT_NAME}}"',
+        'account: "${{env:M365_ACCOUNT_NAME}}"',
+      ),
+    (sourceText) =>
+      sourceText.replace(
+        'password: "${{secret:MS_AZURE_ACCOUNT_PASSWORD}}"',
+        'password: "${{secret:MS_AZURE_ACCOUNT_PASSWORD}}"\n      unexpected: true',
+      ),
+    (sourceText) =>
+      sourceText.replace("value: typescript", "value: javascript"),
+  ]) {
+    const invalid = await compileFixture(fileName, transform);
+    assert.equal(invalid.ok, false);
+    assert.equal(
+      invalid.diagnostics[0].code,
+      "VCB_SWITCH_M365_ACCOUNT_INPUT_INVALID",
+    );
+  }
+  for (const transform of [
+    (sourceText) => sourceText.replace("      tenantMismatch: cancel\n", ""),
+    (sourceText) =>
+      sourceText.replace("tenantMismatch: cancel", "tenantMismatch: retry"),
+    (sourceText) => sourceText.replaceAll("        switch-m365-account,\n", ""),
+    (sourceText) =>
+      sourceText.replaceAll(
+        "        cancel-mismatched-launch,",
+        "        cancel-mismatched-launch,\n        cancel-mismatched-launch,",
+      ),
+  ]) {
+    const invalid = await compileFixture(fileName, transform);
+    assert.equal(invalid.ok, false);
+    assert.equal(
+      invalid.diagnostics[0].code,
+      "VCB_TARGET_TENANT_MISMATCH_INPUT_INVALID",
+    );
+  }
+  const cancelledOpen = await compileFixture(fileName, (sourceText) =>
+    sourceText.replace(
+      "        cancel-mismatched-launch,",
+      "        cancel-mismatched-launch,\n        open-app,",
+    ),
+  );
+  assert.equal(cancelledOpen.ok, false);
+  assert.equal(cancelledOpen.diagnostics[0].code, "VCB_OPEN_ADAPTER_UNKNOWN");
+});
+
+test("VCB-196: tenant mismatch cases preserve independent setup", async () => {
+  const result = await compileFixture(
+    "feature-local-debug-tenant-mismatch.yml",
+    (sourceText) => sourceText,
+  );
+  assert.equal(result.ok, true, result.diagnostics?.[0]?.code);
+  assert.equal(result.value.length, 2);
+  for (const entry of result.value) {
+    assert.equal(entry.fileName, `${entry.caseId}.json`);
+    assert.equal(entry.plan.plan_metadata.description.workitem, "33849529");
+    assert.ok(
+      entry.plan.steps.some((step) => step.parameters.text === "TypeScript"),
+    );
+    assert.equal(
+      entry.plan.steps.filter(
+        (step) => step.parameters.text === "Debug in Teams (Chrome)",
+      ).length,
+      2,
+    );
+    assert.ok(
+      entry.plan.steps.some(
+        (step) => step.parameters.text === "${{env:M365_ACCOUNT_NAME}}",
+      ),
+    );
+  }
+});
+
+test("VCB-197: verified tenant mismatch branches retire only their legacy", async () => {
+  const result = await compileFixture(
+    "feature-local-debug-tenant-mismatch.yml",
+    (sourceText) => sourceText,
+  );
+  assert.equal(result.ok, true, result.diagnostics?.[0]?.code);
+  assert.deepEqual(result.value.map((entry) => entry.caseId).sort(), [
+    "feature-local-debug-tenant-mismatch-cancel",
+    "feature-local-debug-tenant-mismatch-continue",
+  ]);
+  const legacy =
+    "Feature_Simple_Bot_ts_Local_Debug_With_Different_Account.json";
+  assert.equal(
+    fsSync.existsSync(path.join(casesDirectory, "..", "plans", legacy)),
+    false,
+  );
+  const mapping = await fs.readFile(
+    path.join(casesDirectory, "legacy-case-mapping.md"),
+    "utf8",
+  );
+  for (const generated of result.value) {
+    assert.equal(
+      mapping
+        .split("\n")
+        .some(
+          (line) =>
+            line.includes(legacy) &&
+            line.includes(generated.fileName) &&
+            line.includes("| Full |"),
+        ),
+      true,
+      generated.caseId,
+    );
+  }
+  for (const retained of ["feature-check-copilot-license-enabled.json"]) {
+    await fs.access(path.join(casesDirectory, "..", "plans", retained));
+  }
+});
+
 test("VCB-191: local browser close requires readiness before a separate relaunch", async () => {
   const addClose = (sourceText, definition = "with: {}") =>
     sourceText
@@ -10724,11 +11345,7 @@ test("VCB-194: verified second-F5 replacement retires only its legacy", async ()
       ),
     true,
   );
-  for (const retained of [
-    "Feature_Simple_Bot_ts_Local_Debug_With_Different_Account.json",
-    "Feature_Check_Copilot_License_Enabled.json",
-    "Feature_Sign_In_No_Subscription.json",
-  ]) {
+  for (const retained of ["feature-check-copilot-license-enabled.json"]) {
     assert.equal(
       fsSync.existsSync(path.join(casesDirectory, "..", "plans", retained)),
       true,

@@ -81,15 +81,19 @@ describe("configMgr", () => {
       assert.isTrue(stub.called);
     });
 
-    it("loads ATK_FRONTIER from the enableFrontier user setting", () => {
-      vi.spyOn(configMgr, "getConfiguration").mockImplementation(
-        (key) => key === ConfigurationKey.EnableFrontier
-      );
+    it.each([true, false])(
+      "loads ATK_FRONTIER=%s from the enableFrontier user setting",
+      (enabled) => {
+        const getConfigurationStub = vi
+          .spyOn(configMgr, "getConfiguration")
+          .mockImplementation((key) => key === ConfigurationKey.EnableFrontier && enabled);
 
-      configMgr.loadFeatureFlags();
+        configMgr.loadFeatureFlags();
 
-      assert.equal(process.env.ATK_FRONTIER, "true");
-    });
+        assert.isTrue(getConfigurationStub.calledWith(ConfigurationKey.EnableFrontier, false));
+        assert.equal(process.env.ATK_FRONTIER, enabled.toString());
+      }
+    );
   });
 
   describe("registerConfigChangeCallback", () => {

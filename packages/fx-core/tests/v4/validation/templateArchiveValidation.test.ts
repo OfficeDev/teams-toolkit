@@ -75,13 +75,14 @@ describe("v4/validation/templateArchiveValidation", () => {
           const assert = require("node:assert/strict");
           const bytes = require("node:fs").readFileSync(0);
           const Module = require("node:module");
-          const load = Module._load;
-          Module._load = function(request, parent, isMain) {
+          const resolveFilename = Module._resolveFilename;
+          Module._resolveFilename = function(request, ...args) {
             assert.ok(!request.startsWith("@microsoft/teamsfx-api"),
               "Build validation must not load product API: " + request);
-            return load.call(this, request, parent, isMain);
+            return resolveFilename.call(this, request, ...args);
           };
           try {
+          assert.throws(() => require.resolve("@microsoft/teamsfx-api"), /must not load product API/);
           const { validateDeclarativeTemplateArchive, validateDeclarativePackageArchive } =
             require("../packages/fx-core/src/v4/validation/templateArchiveValidation.ts");
           const { CURRENT_V4_ENGINE_VERSION } = require("../packages/fx-core/src/v4/engineVersion.ts");
@@ -111,7 +112,7 @@ describe("v4/validation/templateArchiveValidation", () => {
           }
           console.log("validated without product API build output");
           } catch (error) {
-            console.error(error.message);
+            console.error(String(error.stack ?? error.message).replaceAll("    at ", "    frame: "));
             process.exitCode = 1;
           }
         `,

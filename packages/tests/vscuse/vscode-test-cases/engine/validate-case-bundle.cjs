@@ -18,7 +18,9 @@ const allowedRootFields = new Set([
 const allowedStepFields = new Set(["type", "with"]);
 const allowedStepTypes = new Set([
   "scaffold",
+  "checkCopilotLicense",
   "login",
+  "switchM365Account",
   "provision",
   "provisionWithoutAccount",
   "deploy",

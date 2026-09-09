@@ -69,18 +69,33 @@ describe("v4/validation/templateArchiveValidation", () => {
       process.execPath,
       [
         "--no-preserve-symlinks",
-        "--require",
-        require.resolve("tsx/cjs", { paths: [templatesRoot] }),
         "--eval",
         `
           const assert = require("node:assert/strict");
-          const bytes = require("node:fs").readFileSync(0);
+          const fs = require("node:fs");
+          const bytes = fs.readFileSync(0);
           const Module = require("node:module");
+          const sourceRequire = Module.createRequire(require("node:path").resolve("../packages/fx-core/src/v4/validation/templateArchiveValidation.ts"));
+          const resolution = () => {
+            const semver = sourceRequire.resolve("semver");
+            const semverRequire = Module.createRequire(semver);
+            const lru = semverRequire.resolve("lru-cache");
+            return { semver, realSemver: fs.realpathSync.native(semver), lru,
+              semverVersion: semverRequire("./package.json").version,
+              lruVersion: semverRequire("lru-cache/package.json").version };
+          };
+          const nativeResolution = resolution();
+          require("tsx/cjs");
           const resolveFilename = Module._resolveFilename;
+          const loadedModules = [];
           Module._resolveFilename = function(request, ...args) {
             assert.ok(!request.startsWith("@microsoft/teamsfx-api"),
               "Build validation must not load product API: " + request);
-            return resolveFilename.call(this, request, ...args);
+            const resolved = resolveFilename.call(this, request, ...args);
+            if (request === "semver" || request === "lru-cache") {
+              loadedModules.push({ request, parent: args[0]?.filename, resolved });
+            }
+            return resolved;
           };
           try {
           assert.throws(() => require.resolve("@microsoft/teamsfx-api"), /must not load product API/);
@@ -113,6 +128,7 @@ describe("v4/validation/templateArchiveValidation", () => {
           }
           console.log("validated without product API build output");
           } catch (error) {
+            console.error(JSON.stringify({ nativeResolution, loadedModules }));
             console.error(String(error.stack ?? error.message).replaceAll("    at ", "    frame: "));
             process.exitCode = 1;
           }

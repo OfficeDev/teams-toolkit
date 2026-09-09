@@ -6,6 +6,7 @@ import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 import * as vsc_ui from "../../src/qm/vsc_ui";
 import * as lifecycleHandlers from "../../src/handlers/lifecycleHandlers";
 import { vi, assert } from "vitest";
+import { ConfigurationKey } from "../../src/constants";
 
 describe("configMgr", () => {
   describe("loadLogLevel", () => {
@@ -69,10 +70,25 @@ describe("configMgr", () => {
   });
 
   describe("loadFeatureFlags", () => {
+    afterEach(() => {
+      delete process.env.ATK_FRONTIER;
+      vi.restoreAllMocks();
+    });
+
     it("happy", () => {
       const stub = vi.spyOn(configMgr, "getConfiguration").mockReturnValue(false);
       configMgr.loadFeatureFlags();
       assert.isTrue(stub.called);
+    });
+
+    it("loads ATK_FRONTIER from the enableFrontier user setting", () => {
+      vi.spyOn(configMgr, "getConfiguration").mockImplementation(
+        (key) => key === ConfigurationKey.EnableFrontier
+      );
+
+      configMgr.loadFeatureFlags();
+
+      assert.equal(process.env.ATK_FRONTIER, "true");
     });
   });
 

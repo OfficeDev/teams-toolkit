@@ -2338,7 +2338,7 @@ export class FxCore extends FxCoreOpenPluginPart {
     ConcurrentLockerMW,
   ])
   async addSkill(inputs: Inputs): Promise<Result<undefined | any, FxError>> {
-    if (!featureFlagManager.getBooleanValue(FeatureFlags.AgentSkillsManifest)) {
+    if (!featureFlagManager.getBooleanValue(FeatureFlags.Frontier)) {
       return err(
         new UserError(
           "FxCore",

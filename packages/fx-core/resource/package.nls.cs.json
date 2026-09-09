@@ -10,7 +10,7 @@
   "core.addKnowledge.continue": "Přidat",
   "core.addSkill.confirm": "Microsoft 365 Sada nástrojů pro agenty upraví soubory ve složce %s a přidá dovednost agenta. Pokud se chcete vyhnout ztrátě neočekávaných změn, před pokračováním zazálohujte soubory nebo použijte Git ke sledování změn.",
   "core.addSkill.continue": "Přidat",
-  "core.addSkill.featureFlagDisabled": "Dovednosti agenta nejsou povolené. Nastavením proměnné prostředí TEAMSFX_AGENT_SKILLS=true povolíte tuto funkci Preview.",
+  "core.addSkill.featureFlagDisabled": "Dovednosti agenta nejsou povolené. Nastavením proměnné prostředí ATK_FRONTIER=true povolíte tuto funkci Preview.",
   "core.setSensitivityLabel.confirm": "Sada nástrojů Teams upraví soubor %s na základě zadaného popisku citlivosti. Pokud se chcete vyhnout ztrátě neočekávaných změn, před pokračováním zazálohujte soubory nebo použijte Git ke sledování změn.",
   "core.setSensitivityLabel.continue": "Nastavit",
   "core.provision.provision": "Zřizování",

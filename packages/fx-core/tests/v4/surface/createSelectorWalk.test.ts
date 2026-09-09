@@ -654,7 +654,7 @@ describe("runCreateSelector (walk-create-selector)", () => {
     assert.notInclude(ui.selectNames, LANGUAGE_QUESTION);
   });
 
-  it("WCS-12: the skill daTemplate option is hidden unless TEAMSFX_AGENT_SKILLS is on", async () => {
+  it("WCS-12: the skill daTemplate option is hidden unless ATK_FRONTIER is on", async () => {
     const ui = new ScriptedUI({
       projectType: "copilot-agent-type",
       daTemplate: "no-action",
@@ -684,12 +684,12 @@ describe("runCreateSelector (walk-create-selector)", () => {
     assert.notInclude(offered, "da-meta-os");
   });
 
-  it("WCS-13: copilot\u2192skill with TEAMSFX_AGENT_SKILLS on resolves the v4 route", async () => {
+  it("WCS-13: copilot\u2192skill with ATK_FRONTIER on resolves the v4 route", async () => {
     const picks = { projectType: "copilot-agent-type", daTemplate: "skill" };
     const ui = new ScriptedUI(picks);
 
     const res = await runCreateSelector(buildFloor(), asUI(ui), "vscode", {
-      flagReader: flagsOn("TEAMSFX_AGENT_SKILLS"),
+      flagReader: flagsOn("ATK_FRONTIER"),
     });
 
     assert.isTrue(res.isOk());

@@ -10,7 +10,7 @@
   "core.addKnowledge.continue": "添加",
   "core.addSkill.confirm": "Microsoft 365 智能体工具包将修改“%s”文件夹中的文件，以添加该智能体技能。为避免丢失意外更改，请先备份文件或使用 git 跟踪更改，然后再继续操作。",
   "core.addSkill.continue": "添加",
-  "core.addSkill.featureFlagDisabled": "未启用智能体技能。设置环境变量 TEAMSFX_AGENT_SKILLS=true 以启用此预览功能。",
+  "core.addSkill.featureFlagDisabled": "未启用智能体技能。设置环境变量 ATK_FRONTIER=true 以启用此预览功能。",
   "core.setSensitivityLabel.confirm": "Teams 工具包将根据你提供的敏感度标签修改文件“%s”。为了避免丢失意外更改，请先备份文件或使用 git 跟踪更改，然后再继续操作。",
   "core.setSensitivityLabel.continue": "设置",
   "core.provision.provision": "预配",

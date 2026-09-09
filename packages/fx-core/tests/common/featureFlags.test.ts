@@ -59,6 +59,11 @@ describe("FeatureFlagManager", () => {
     const stringRes = featureFlagManager.getStringValue(FeatureFlags.V4Enabled);
     chai.assert.equal(stringRes, "false");
   });
+  it("Frontier uses ATK_FRONTIER and defaults to false", async () => {
+    mockedEnvRestore = mockedEnv({ ATK_FRONTIER: undefined });
+    chai.assert.equal(FeatureFlags.Frontier.name, "ATK_FRONTIER");
+    chai.assert.isFalse(featureFlagManager.getBooleanValue(FeatureFlags.Frontier));
+  });
   it("list", async () => {
     const list = featureFlagManager.list();
     chai.assert.deepEqual(list, Object.values(FeatureFlags));

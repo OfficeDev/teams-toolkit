@@ -10,7 +10,7 @@
   "core.addKnowledge.continue": "Agregar",
   "core.addSkill.confirm": "El Kit de herramientas para agentes de Microsoft 365 modificará los archivos de la carpeta \"%s\" para agregar la aptitud del agente. Para evitar perder cambios inesperados, realice una copia de seguridad de sus archivos o use git para el seguimiento de cambios antes de continuar.",
   "core.addSkill.continue": "Agregar",
-  "core.addSkill.featureFlagDisabled": "Las aptitudes del agente no están habilitadas. Establezca la variable de entorno TEAMSFX_AGENT_SKILLS=true para habilitar esta Característica en vista previa (GB).",
+  "core.addSkill.featureFlagDisabled": "Las aptitudes del agente no están habilitadas. Establezca la variable de entorno ATK_FRONTIER=true para habilitar esta Característica en vista previa (GB).",
   "core.setSensitivityLabel.confirm": "El kit de herramientas de Teams modificará el archivo \"%s\" en función de la etiqueta de confidencialidad que haya proporcionado. Para evitar perder cambios inesperados, realice una copia de seguridad de sus archivos o use git para el seguimiento de cambios antes de continuar.",
   "core.setSensitivityLabel.continue": "Establecer",
   "core.provision.provision": "Aprovisionar",

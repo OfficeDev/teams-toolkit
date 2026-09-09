@@ -10,7 +10,7 @@
   "core.addKnowledge.continue": "Hinzufügen",
   "core.addSkill.confirm": "Das Microsoft 365 Agents Toolkit ändert Dateien in Ihrem Ordner „%s“, um den Agent-Skill hinzuzufügen. Um unerwartete Änderungen zu vermeiden, sichern Sie Ihre Dateien, oder verwenden Sie Git für die Änderungsnachverfolgung, bevor Sie fortfahren.",
   "core.addSkill.continue": "Hinzufügen",
-  "core.addSkill.featureFlagDisabled": "Agent-Skills sind nicht aktiviert. Legen Sie die Umgebungsvariable TEAMSFX_AGENT_SKILLS=true fest, um dieses Previewfeature zu aktivieren.",
+  "core.addSkill.featureFlagDisabled": "Agent-Skills sind nicht aktiviert. Legen Sie die Umgebungsvariable ATK_FRONTIER=true fest, um dieses Previewfeature zu aktivieren.",
   "core.setSensitivityLabel.confirm": "Das Teams Toolkit wird die Datei „%s“ basierend auf der von Ihnen angegebenen Vertraulichkeitsbezeichnung ändern. Um unerwartete Änderungen zu vermeiden, sichern Sie Ihre Dateien, oder verwenden Sie Git für die Änderungsnachverfolgung, bevor Sie fortfahren.",
   "core.setSensitivityLabel.continue": "Festlegen",
   "core.provision.provision": "Bereitstellung",

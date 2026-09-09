@@ -561,7 +561,7 @@ export class DACapabilityOptions {
       DACapabilityOptions.noPlugin(),
       DACapabilityOptions.withPlugin(),
       DACapabilityOptions.withGC(),
-      ...(featureFlagManager.getBooleanValue(FeatureFlags.AgentSkillsManifest)
+      ...(featureFlagManager.getBooleanValue(FeatureFlags.Frontier)
         ? [DACapabilityOptions.withSkill()]
         : []),
       DACapabilityOptions.typeSpec(),

@@ -10,7 +10,7 @@
   "core.addKnowledge.continue": "Ajouter",
   "core.addSkill.confirm": "Kit de création d’assistants Microsoft 365 modifie les fichiers de votre dossier «%s» pour ajouter la compétence d’agent. Pour éviter de perdre des modifications inattendues, sauvegardez vos fichiers ou utilisez Git pour le suivi des modifications avant de continuer.",
   "core.addSkill.continue": "Ajouter",
-  "core.addSkill.featureFlagDisabled": "Les compétences de l’agent ne sont pas activées. Définissez la variable d’environnement TEAMSFX_AGENT_SKILLS=true pour activer cette fonctionnalité en préversion.",
+  "core.addSkill.featureFlagDisabled": "Les compétences de l’agent ne sont pas activées. Définissez la variable d’environnement ATK_FRONTIER=true pour activer cette fonctionnalité en préversion.",
   "core.setSensitivityLabel.confirm": "Le kit de ressources Teams va modifier le fichier « %s » en fonction de l’étiquette de sensibilité que vous avez fournie. Pour éviter de perdre des modifications inattendues, sauvegardez vos fichiers ou utilisez Git pour le suivi des modifications avant de continuer.",
   "core.setSensitivityLabel.continue": "Ensemble",
   "core.provision.provision": "Approvisionner",

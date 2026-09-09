@@ -114,7 +114,7 @@ export class ConfigureTeamsAppDriver implements StepDriver {
         )
       );
     }
-    let resolvedAppId = appId;
+    let resolvedAppId: string;
     try {
       const appDefinition = await teamsDevPortalClient.getApp(appStudioToken, appId);
       resolvedAppId = appDefinition.appId ?? appId;

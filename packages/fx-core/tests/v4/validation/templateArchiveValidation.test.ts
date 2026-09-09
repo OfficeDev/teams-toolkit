@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import { SystemError, UserError } from "@microsoft/teamsfx-api";
+import { spawnSync } from "child_process";
 import * as path from "path";
 import AdmZip from "adm-zip";
 import { assert } from "vitest";
@@ -62,6 +63,65 @@ function selectorOnlyArchive(): AdmZip {
 }
 
 describe("v4/validation/templateArchiveValidation", () => {
+  it("AC-29: validates source archives before product API build output exists", () => {
+    const templatesRoot = path.dirname(V4_ROOT);
+    const child = spawnSync(
+      process.execPath,
+      [
+        "--require",
+        require.resolve("tsx/cjs", { paths: [templatesRoot] }),
+        "--eval",
+        `
+          const assert = require("node:assert/strict");
+          const bytes = require("node:fs").readFileSync(0);
+          const Module = require("node:module");
+          const load = Module._load;
+          Module._load = function(request, parent, isMain) {
+            assert.ok(!request.startsWith("@microsoft/teamsfx-api"),
+              "Build validation must not load product API: " + request);
+            return load.call(this, request, parent, isMain);
+          };
+          try {
+          const { validateDeclarativeTemplateArchive, validateDeclarativePackageArchive } =
+            require("../packages/fx-core/src/v4/validation/templateArchiveValidation.ts");
+          const { CURRENT_V4_ENGINE_VERSION } = require("../packages/fx-core/src/v4/engineVersion.ts");
+          const failure = Object.assign(new Error("caller-owned"), { source: "TemplatesBuild" });
+          const errors = { user: () => failure, system: () => failure };
+          const archive = validateDeclarativeTemplateArchive(bytes, "build", CURRENT_V4_ENGINE_VERSION, errors);
+          assert.ok(archive.isOk());
+          const opened = validateDeclarativePackageArchive(bytes,
+            { kind: "create", templateId: "da/mcp-server" }, "load", CURRENT_V4_ENGINE_VERSION, errors);
+          assert.ok(opened.isOk());
+          assert.equal(opened.value.template.descriptor.id, "da/mcp-server");
+          assert.equal(opened.value.template.content, opened.value.content);
+          const invalid = validateDeclarativeTemplateArchive(Buffer.from("invalid"), "build", CURRENT_V4_ENGINE_VERSION, errors);
+          assert.equal(invalid.error, failure);
+          const { prepareTemplate, PACKAGE_PARSE_ERROR } = require("../packages/fx-core/src/v4/validation/packageParse.ts");
+          const parseError = (name, message) => {
+            assert.equal(name, PACKAGE_PARSE_ERROR);
+            assert.ok(message.length > 0);
+            return failure;
+          };
+          for (const raw of [
+            { descriptor: [], pipeline: {} },
+            { descriptor: {}, pipeline: {} },
+            { descriptor: { languageOptions: false }, pipeline: { pipeline: "default", steps: [] } },
+          ]) {
+            assert.equal(prepareTemplate({ ...raw, content: [] }, parseError).error, failure);
+          }
+          console.log("validated without product API build output");
+          } catch (error) {
+            console.error(error.message);
+            process.exitCode = 1;
+          }
+        `,
+      ],
+      { cwd: templatesRoot, input: fullArchive(), encoding: "utf8", timeout: 60000 }
+    );
+    assert.equal(child.status, 0, child.stderr || child.error?.message);
+    assert.include(child.stdout, "validated without product API build output");
+  });
+
   it("CLEAN-07: consuming the new OpenAPI output requires its introduction version", () => {
     const zip = new AdmZip(fullArchive());
     const descriptorPath = "v4/create/da/api-plugin-from-existing-api/descriptor.json";

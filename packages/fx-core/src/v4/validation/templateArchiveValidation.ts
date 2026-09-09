@@ -7,7 +7,8 @@ import Ajv from "ajv";
 import type { AnySchema, ValidateFunction } from "ajv";
 import { err, ok } from "neverthrow";
 import type { Result } from "neverthrow";
-import { PreparedLoadedPackage, prepareLoadedPackage } from "../distribution/packageDir";
+import type { PreparedLoadedPackage } from "../distribution/packageDir";
+import { prepareTemplate } from "./packageParse";
 import type { DeclarativeLocator, TemplateFileEntry } from "../model/dataModel";
 import { VALIDATE_SCHEMA, validateTemplatePackage } from "./validateTemplatePackage";
 import type {
@@ -366,11 +367,15 @@ function validateOpenedPackage(
     return err(validation.error);
   }
 
-  return prepareLoadedPackage({
+  const raw = {
     descriptor: validation.value.descriptor,
     pipeline: pipeline.value,
     content: content.value.raw,
-  });
+  };
+  return prepareTemplate(raw, (name, message) => errors.system(name, message)).map((template) => ({
+    ...raw,
+    template,
+  }));
 }
 
 /** Validate and open one declarative package from final channel archive bytes. */

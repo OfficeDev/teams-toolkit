@@ -30,6 +30,7 @@ import {
   ActionStartOptions,
   BotCapabilityOptions,
   CustomCopilotRagOptions,
+  DACapabilityOptions,
   MeArchitectureOptions,
   MeCapabilityOptions,
   NotificationBotOptions,
@@ -1371,6 +1372,22 @@ describe("ActionStartOptions", () => {
       getLocalizedString("template.createProjectQuestion.mcpForDa.detail")
     );
     assert.equal(mcpOption.data, TemplateNames.DeclarativeAgentWithActionFromMCP);
+  });
+});
+
+describe("DACapabilityOptions", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it.each([true, false])("includes skill when Frontier is %s", (enabled) => {
+    vi.spyOn(featureFlagManager, "getBooleanValue").mockImplementation(
+      (flag) => flag === FeatureFlags.Frontier && enabled
+    );
+
+    const optionIds = DACapabilityOptions.all().map((option) => option.id);
+
+    assert.equal(optionIds.includes(DACapabilityOptions.withSkill().id), enabled);
   });
 });
 

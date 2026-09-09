@@ -68,6 +68,7 @@ describe("v4/validation/templateArchiveValidation", () => {
     const child = spawnSync(
       process.execPath,
       [
+        "--no-preserve-symlinks",
         "--require",
         require.resolve("tsx/cjs", { paths: [templatesRoot] }),
         "--eval",
@@ -117,7 +118,17 @@ describe("v4/validation/templateArchiveValidation", () => {
           }
         `,
       ],
-      { cwd: templatesRoot, input: fullArchive(), encoding: "utf8", timeout: 60000 }
+      {
+        cwd: templatesRoot,
+        input: fullArchive(),
+        encoding: "utf8",
+        timeout: 60000,
+        env: {
+          ...process.env,
+          NODE_OPTIONS: "--preserve-symlinks",
+          NODE_PATH: path.resolve(templatesRoot, "../node_modules/.pnpm/node_modules"),
+        },
+      }
     );
     assert.equal(child.status, 0, child.stderr || child.error?.message);
     assert.include(child.stdout, "validated without product API build output");

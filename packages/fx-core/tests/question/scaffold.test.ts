@@ -1504,9 +1504,17 @@ describe("DACapabilityOptions", () => {
       (flag) => flag === FeatureFlags.Frontier && enabled
     );
 
-    const optionIds = DACapabilityOptions.all().map((option) => option.id);
+    const options = DACapabilityOptions.all();
+    const optionIds = options.map((option) => option.id);
 
     assert.equal(optionIds.includes(DACapabilityOptions.withSkill().id), enabled);
+    if (enabled) {
+      const skill = options.find((option) => option.id === DACapabilityOptions.withSkill().id);
+      assert.equal(
+        skill?.label,
+        `${getLocalizedString("template.createProjectQuestion.addSkill.label")} (Frontier)`
+      );
+    }
   });
 });
 

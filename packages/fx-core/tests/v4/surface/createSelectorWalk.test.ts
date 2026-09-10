@@ -704,6 +704,27 @@ describe("runCreateSelector (walk-create-selector)", () => {
     assert.deepEqual(ui.selectNames, ["projectType", "daTemplate"]);
   });
 
+  it("WCS-13b: adds Frontier suffix only to ATK_FRONTIER-controlled options", async () => {
+    const ui = new ScriptedUI({
+      projectType: "copilot-agent-type",
+      daTemplate: "no-action",
+    });
+
+    const res = await runCreateSelector(buildFloor(), asUI(ui), "vscode", {
+      flagReader: flagsOn("ATK_FRONTIER"),
+    });
+
+    assert.isTrue(res.isOk());
+    assert.equal(
+      offeredOption(ui.configByName.get("daTemplate"), "skill")?.label,
+      `${getLocalizedString("template.createProjectQuestion.addSkill.label")} (Frontier)`
+    );
+    assert.equal(
+      offeredOption(ui.configByName.get("daTemplate"), "no-action")?.label,
+      getLocalizedString("template.createProjectQuestion.noPlugin.label")
+    );
+  });
+
   it("WCS-18: copilot\u2192typespec resolves the v4 route", async () => {
     const picks = { projectType: "copilot-agent-type", daTemplate: "typespec" };
     const ui = new ScriptedUI(picks);

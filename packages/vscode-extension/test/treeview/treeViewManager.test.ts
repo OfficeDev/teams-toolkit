@@ -188,9 +188,12 @@ describe("TreeViewManager", () => {
     const developmentTreeview = treeViewManager.getTreeView(
       "teamsfx-development"
     ) as CommandsTreeViewProvider;
-    const hasAddSkill = developmentTreeview
+    const addSkill = developmentTreeview
       .getCommands()
-      .some((command) => command.commandId === "fx-extension.addSkill");
-    assert.equal(hasAddSkill, enabled);
+      .find((command) => command.commandId === "fx-extension.addSkill");
+    assert.equal(addSkill !== undefined, enabled);
+    if (enabled) {
+      assert.equal(addSkill.label, "Add Skill (Frontier)");
+    }
   });
 });

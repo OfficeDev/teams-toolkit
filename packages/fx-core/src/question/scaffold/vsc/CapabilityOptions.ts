@@ -2,8 +2,8 @@
 // Licensed under the MIT license.
 
 import { Inputs, OptionItem } from "@microsoft/teamsfx-api";
-import { featureFlagManager, FeatureFlags } from "../../../common/featureFlags";
-import { getLocalizedString } from "../../../common/localizeUtils";
+import { featureFlagManager, FeatureFlagName, FeatureFlags } from "../../../common/featureFlags";
+import { getFeatureFlaggedLabel, getLocalizedString } from "../../../common/localizeUtils";
 import { TemplateNames } from "../../../component/generator/templates/templateNames";
 import {
   HostType,
@@ -562,7 +562,10 @@ export class DACapabilityOptions {
       DACapabilityOptions.withPlugin(),
       DACapabilityOptions.withGC(),
       ...(featureFlagManager.getBooleanValue(FeatureFlags.Frontier)
-        ? [DACapabilityOptions.withSkill()]
+        ? [DACapabilityOptions.withSkill()].map((option) => ({
+            ...option,
+            label: getFeatureFlaggedLabel(option.label, FeatureFlagName.Frontier),
+          }))
         : []),
       DACapabilityOptions.typeSpec(),
     ];

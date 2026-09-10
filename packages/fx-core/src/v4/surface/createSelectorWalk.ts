@@ -26,8 +26,14 @@ import {
   openSelectorPresentationFromJsonBytes,
 } from "../distribution/createSelector";
 import { openDeclarativePackage } from "../distribution/declarativePackage";
-import { ExpressionRuntimePort, Scope, evaluateExpression } from "../expression/evaluateExpression";
+import {
+  ExpressionRuntimePort,
+  Scope,
+  collectFeatureFlagReferences,
+  evaluateExpression,
+} from "../expression/evaluateExpression";
 import { readBooleanFeatureFlag } from "../../common/featureFlags";
+import { getFeatureFlaggedLabel } from "../../common/localizeUtils";
 import { localizePrefixedText } from "./localizePrompt";
 
 /** Live Q1 create-selector prompt face. See walk-create-selector spec. */
@@ -36,6 +42,14 @@ const SOURCE = "Scaffold";
 
 function labelWithIcon(label: string, iconPath: string | undefined): string {
   return iconPath === undefined ? label : `$(${iconPath}) ${label}`;
+}
+
+function optionLabel(option: PresentationOption, featureFlagNames: ReadonlySet<string>): string {
+  let label = localizePrefixedText(option.keyPrefix, "label", option.label);
+  for (const featureFlagName of featureFlagNames) {
+    label = getFeatureFlaggedLabel(label, featureFlagName);
+  }
+  return labelWithIcon(label, option.iconPath);
 }
 
 /** Create-selector options; all are defaulted. */
@@ -92,9 +106,18 @@ function buildPort(
       });
     }
     const scope: Scope = { surface };
-    const visible: PresentationOption[] = [];
+    const visible: Array<{
+      option: PresentationOption;
+      featureFlagNames: ReadonlySet<string>;
+    }> = [];
     for (const option of pq.staticOptions) {
+      let featureFlagNames: ReadonlySet<string> = new Set();
       if (option.condition !== undefined) {
+        const references = collectFeatureFlagReferences(option.condition);
+        if (references.isErr()) {
+          throw references.error;
+        }
+        featureFlagNames = references.value;
         const gate = evaluateExpression(option.condition, scope, exprPort);
         if (gate.isErr()) {
           throw gate.error;
@@ -103,19 +126,16 @@ function buildPort(
           continue;
         }
       }
-      visible.push(option);
+      visible.push({ option, featureFlagNames });
     }
     const selected = await ui.selectOption({
       name: pq.name,
       title: localizePrefixedText(pq.keyPrefix, "title", pq.title) ?? pq.name,
       placeholder: localizePrefixedText(pq.keyPrefix, "placeholder", pq.placeholder),
       step,
-      options: visible.map((option) => ({
+      options: visible.map(({ option, featureFlagNames }) => ({
         id: option.id,
-        label: labelWithIcon(
-          localizePrefixedText(option.keyPrefix, "label", option.label) ?? option.label,
-          option.iconPath
-        ),
+        label: optionLabel(option, featureFlagNames),
         detail: localizePrefixedText(option.keyPrefix, "detail", option.detail),
         groupName: localizePrefixedText(option.keyPrefix, "groupName", option.groupName),
       })),

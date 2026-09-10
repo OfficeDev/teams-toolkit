@@ -303,6 +303,32 @@ describe("runCreateSelector (walk-create-selector)", () => {
     }
   });
 
+  it("WCS-00: returns feature flag reference errors from selector JSON", async () => {
+    const ui = new ScriptedUI({ projectType: "minimal" });
+    const selector = {
+      questions: [
+        {
+          name: "projectType",
+          type: "singleSelect",
+          staticOptions: [
+            { id: "minimal", label: "Minimal", condition: { expr: "featureFlag('A'" } },
+          ],
+        },
+      ],
+      routes: [{ when: "projectType=='minimal'", engine: "v4", templateId: "minimal" }],
+    };
+
+    const res = await runCreateSelector(Buffer.from(JSON.stringify(selector)), asUI(ui), "vscode", {
+      selectorBytesKind: "json",
+      flagReader: () => false,
+    });
+
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.equal(res.error.name, "ExprParseError");
+    }
+  });
+
   it("WCS-00: returns selector parse errors for invalid selector JSON bytes", async () => {
     const ui = new ScriptedUI({});
 
@@ -702,6 +728,27 @@ describe("runCreateSelector (walk-create-selector)", () => {
     // (no actionSource follow-up \u2014 that is add-action only).
     assert.include(offeredIds(ui.configByName.get("daTemplate")), "skill");
     assert.deepEqual(ui.selectNames, ["projectType", "daTemplate"]);
+  });
+
+  it("WCS-13b: adds Frontier suffix only to ATK_FRONTIER-controlled options", async () => {
+    const ui = new ScriptedUI({
+      projectType: "copilot-agent-type",
+      daTemplate: "no-action",
+    });
+
+    const res = await runCreateSelector(buildFloor(), asUI(ui), "vscode", {
+      flagReader: flagsOn("ATK_FRONTIER"),
+    });
+
+    assert.isTrue(res.isOk());
+    assert.equal(
+      offeredOption(ui.configByName.get("daTemplate"), "skill")?.label,
+      `${getLocalizedString("template.createProjectQuestion.addSkill.label")} (Frontier)`
+    );
+    assert.equal(
+      offeredOption(ui.configByName.get("daTemplate"), "no-action")?.label,
+      getLocalizedString("template.createProjectQuestion.noPlugin.label")
+    );
   });
 
   it("WCS-18: copilot\u2192typespec resolves the v4 route", async () => {

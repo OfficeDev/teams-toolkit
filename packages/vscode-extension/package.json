@@ -1517,6 +1517,11 @@
           "default": false,
           "markdownDescription": "Enable launch Agent for Teams in Microsoft 365 Copilot. For more information please refer to [this documentation](https://aka.ms/cea-feature-flag)."
         },
+        "M365AgentsToolkit.enableFrontier": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Enable Frontier features in Microsoft 365 Agents Toolkit. Reload VS Code after changing this setting for it to take effect."
+        },
         "M365AgentsToolkit.enableCustomFunctionShortcutInOfficeAddIn": {
           "type": "boolean",
           "default": true,

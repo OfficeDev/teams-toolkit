@@ -34,6 +34,7 @@ import {
   ActionStartOptions,
   BotCapabilityOptions,
   CustomCopilotRagOptions,
+  DACapabilityOptions,
   MeArchitectureOptions,
   MeCapabilityOptions,
   NotificationBotOptions,
@@ -1493,6 +1494,22 @@ describe("ActionStartOptions", () => {
   });
 });
 
+describe("DACapabilityOptions", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it.each([true, false])("includes skill when Frontier is %s", (enabled) => {
+    vi.spyOn(featureFlagManager, "getBooleanValue").mockImplementation(
+      (flag) => flag === FeatureFlags.Frontier && enabled
+    );
+
+    const optionIds = DACapabilityOptions.all().map((option) => option.id);
+
+    assert.equal(optionIds.includes(DACapabilityOptions.withSkill().id), enabled);
+  });
+});
+
 describe("constructNode", () => {
   it("should return foundryNode when node is foundryNode", () => {
     const json = JSON.stringify({
@@ -1974,7 +1991,7 @@ describe("constructNode", () => {
   });
 
   it("should exclude a false-default feature-flagged option when env var is unset", () => {
-    delete process.env[FeatureFlagName.AgentSkillsManifest];
+    delete process.env[FeatureFlagName.Frontier];
     const json = JSON.stringify({
       data: {
         title: "test.title",
@@ -1982,7 +1999,7 @@ describe("constructNode", () => {
         type: "singleSelect",
         options: [
           { id: "always-visible", label: "Always" },
-          { id: "flagged", label: "Flagged", featureFlag: FeatureFlagName.AgentSkillsManifest },
+          { id: "flagged", label: "Flagged", featureFlag: FeatureFlagName.Frontier },
         ],
       },
     });
@@ -2024,7 +2041,7 @@ describe("constructNode", () => {
   });
 
   it("should let an explicit env override win for a false-default flag", () => {
-    process.env[FeatureFlagName.AgentSkillsManifest] = "true";
+    process.env[FeatureFlagName.Frontier] = "true";
     try {
       const json = JSON.stringify({
         data: {
@@ -2033,7 +2050,7 @@ describe("constructNode", () => {
           type: "singleSelect",
           options: [
             { id: "always-visible", label: "Always" },
-            { id: "flagged", label: "Flagged", featureFlag: FeatureFlagName.AgentSkillsManifest },
+            { id: "flagged", label: "Flagged", featureFlag: FeatureFlagName.Frontier },
           ],
         },
       });
@@ -2044,7 +2061,7 @@ describe("constructNode", () => {
       assert.equal(options.length, 2);
       assert.isTrue(options.some((o) => o.id === "flagged"));
     } finally {
-      delete process.env[FeatureFlagName.AgentSkillsManifest];
+      delete process.env[FeatureFlagName.Frontier];
     }
   });
 

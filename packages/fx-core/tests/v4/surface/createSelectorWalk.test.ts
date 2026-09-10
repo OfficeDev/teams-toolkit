@@ -303,6 +303,32 @@ describe("runCreateSelector (walk-create-selector)", () => {
     }
   });
 
+  it("WCS-00: returns feature flag reference errors from selector JSON", async () => {
+    const ui = new ScriptedUI({ projectType: "minimal" });
+    const selector = {
+      questions: [
+        {
+          name: "projectType",
+          type: "singleSelect",
+          staticOptions: [
+            { id: "minimal", label: "Minimal", condition: { expr: "featureFlag('A'" } },
+          ],
+        },
+      ],
+      routes: [{ when: "projectType=='minimal'", engine: "v4", templateId: "minimal" }],
+    };
+
+    const res = await runCreateSelector(Buffer.from(JSON.stringify(selector)), asUI(ui), "vscode", {
+      selectorBytesKind: "json",
+      flagReader: () => false,
+    });
+
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.equal(res.error.name, "ExprParseError");
+    }
+  });
+
   it("WCS-00: returns selector parse errors for invalid selector JSON bytes", async () => {
     const ui = new ScriptedUI({});
 

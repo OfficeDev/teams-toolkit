@@ -50,11 +50,13 @@ atk deploy --env local -i false
 ## Quick Start (Declarative Agents — No Backend)
 
 ```bash
-# Just provision/deploy and open directly
-atk provision --env local -i false
-atk deploy --env local -i false
-# Then open Teams and find your agent in the app list
+# Validate, package, and provision the DA; there is no compute deployment
+wiqd agent validate --path <project> --env local
+wiqd agent package --path <project> --env local
+wiqd agent provision --path <project> --env local
 ```
+
+Then open Microsoft 365 Copilot and find the agent in the app list. For other DA lifecycle operations, follow [declarative-agent-lifecycle.md](../toolkit/declarative-agent-lifecycle.md).
 
 ## Opening in Different Hosts
 
@@ -65,20 +67,6 @@ Get your app IDs from `env/.env.local`, then open:
 | Teams web | `https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&appTenantId=${{TENANT_ID}}&login_hint=${{USER_EMAIL}}` |
 | Outlook web | `https://outlook.office.com/host/${{M365_APP_ID}}` |
 | Office web | `https://www.office.com/m365apps/${{M365_APP_ID}}` |
-
-## Declarative Agents in M365 Copilot
-
-Declarative agents use `M365_APP_ID` (not `TEAMS_APP_ID`), acquired after `teamsApp/extendToM365` runs during provisioning.
-
-**Sideloading URL format:**
-```
-https://m365.cloud.microsoft/chat/entity1-d870f6cd-4aa5-4d42-9626-ab690c041429/${agent-hint}?auth=2&developerMode=Basic
-```
-
-Where `${agent-hint}` is Base64-encoded JSON:
-```json
-{"id": "${M365_APP_ID}", "scenario": "launchcopilotextension", "properties": {"clickTimestamp": "2/6/2026, 10:30:45 AM"}, "version": 1}
-```
 
 ## Dev Tunnels for Bots
 

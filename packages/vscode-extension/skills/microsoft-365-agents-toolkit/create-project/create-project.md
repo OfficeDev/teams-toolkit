@@ -36,7 +36,13 @@ See [../toolkit/templates.md](../toolkit/templates.md) for the complete template
 
 ## Creating Projects
 
-Create templates in the current directory with one generic flow:
+For a Declarative Agent entry in the selection guide, use WIQD and then follow [declarative-agent-lifecycle.md](../toolkit/declarative-agent-lifecycle.md) for actions and lifecycle operations:
+
+```bash
+wiqd agent create --name <project-name> --output <parent-folder>
+```
+
+For all other entries, create templates in the current directory with this flow:
 
 ```bash
 # 1) Scaffold into a temporary parent folder
@@ -52,15 +58,6 @@ rmdir /tmp/<project-name>
 Common examples:
 
 ```bash
-# Declarative Agent (no -l needed)
-atk new -c declarative-agent -n my-agent -f /tmp -i false
-
-# Declarative Agent with new API
-atk new -c declarative-agent-action -l typescript -n my-api-agent -f /tmp -i false
-
-# Declarative Agent with existing OpenAPI spec
-atk new -c declarative-agent-action-from-existing-api -n my-agent -a <openapi-spec-url-or-path> -o "GET /repairs" -o "POST /repairs" -f /tmp -i false
-
 # Custom Engine Agent
 atk new -c basic-custom-engine-agent -l typescript -n my-cea -f /tmp -i false
 
@@ -122,8 +119,6 @@ List all samples with `atk list samples`.
 
 ## Notes
 
-- `declarative-agent` does NOT require `-l` language flag
-- `declarative-agent-action-from-existing-api` requires `-a` (OpenAPI spec) and `-o` (operation IDs like `"GET /path"`)
 - Office add-in capabilities (`office-addin-*`) are TypeScript only; `office-addin-wxpo-taskpane` accepts `--office-addin-hosts word,excel` (comma-separated) to limit which Office apps it supports, defaulting to all four
 - Always use `-i false` for non-interactive scripted creation
 - `atk new` can take several minutes — wait for completion (timeout 120000ms+)
@@ -132,7 +127,8 @@ List all samples with `atk list samples`.
 ## After Scaffolding
 
 Once the project is created:
-- To test locally → see [../test-playground/test-playground.md](../test-playground/test-playground.md)
+- For a DA → continue with [declarative-agent-lifecycle.md](../toolkit/declarative-agent-lifecycle.md)
+- For other projects, to test locally → see [../test-playground/test-playground.md](../test-playground/test-playground.md)
 - To understand project files → see [../toolkit/manifest-and-yaml.md](../toolkit/manifest-and-yaml.md)
 
 ## Expert Deep Dives

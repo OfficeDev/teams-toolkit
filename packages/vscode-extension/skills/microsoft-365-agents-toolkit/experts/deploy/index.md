@@ -4,6 +4,8 @@
 
 Route deployment tasks to the correct cloud-specific expert. Handles the initial cloud provider interview, then loads the matching micro-expert for step-by-step provisioning and deployment.
 
+Do not route a pure Declarative Agent here. For a hybrid DA, route only its backend compute here; WIQD owns the DA lifecycle.
+
 ## interview
 
 ### Q1 — Cloud Provider

@@ -1,5 +1,7 @@
 # Agent Templates Reference
 
+Declarative Agent entries below are recognition metadata. Use WIQD, not `atk new`, to create a DA.
+
 ## Contents
 - CLI Capabilities (all atk new -c options)
 - Declarative Agents (creating, options)
@@ -11,7 +13,7 @@
 
 ## CLI Capabilities (atk new -c)
 
-Use `atk new -c <capability>` to create projects. Available capabilities:
+For non-DA entries, use `atk new -c <capability>`. Available capabilities:
 
 | Capability | Description |
 |------------|-------------|
@@ -49,32 +51,10 @@ Use `atk new -c <capability>` to create projects. Available capabilities:
 ### Creating a Declarative Agent
 
 ```bash
-# Basic declarative agent (no backend service needed)
-atk new -c declarative-agent -n myagent -i false
-
-# Declarative agent with new API plugin (creates backend)
-atk new -c declarative-agent-action -l typescript -n myagent -i false
-
-# Declarative agent with existing OpenAPI spec (requires -a and -o with operation IDs)
-# First inspect the OpenAPI spec to find operation IDs, then pass them:
-atk new -c declarative-agent-action-from-existing-api -n myagent -a <openapi-spec-url-or-path> -o "GET /repairs" -o "POST /repairs" -i false
-
-# Declarative agent with MCP Server
-atk new -c declarative-agent-with-action-from-mcp -n myagent -i false
+wiqd agent create --name <name> --output <parent-folder>
 ```
 
-**Important Notes:**
-- Basic declarative agents (`declarative-agent`) do NOT require a programming language
-- `declarative-agent-action`: Use `-l typescript/javascript/csharp` (creates new backend API)
-- `declarative-agent-action-from-existing-api`: Requires `-a` (OpenAPI spec) and `-o` (operation IDs from the spec, e.g., `"GET /repairs"`)
-
-### Declarative Agent Options
-
-| Option | Values | Description |
-|--------|--------|-------------|
-| `--openapi-spec-location -a` | file path or URL | **Required for existing API**: OpenAPI spec location |
-| `--api-operation -o` | operation IDs (e.g., `"GET /path"`) | **Required for existing API**: Actual operation IDs from OpenAPI spec. Use multiple `-o` for multiple operations |
-| `--api-auth` | `none`, `api-key`, `bearer-token`, `oauth` | API authentication type |
+Add actions and continue the lifecycle with [declarative-agent-lifecycle.md](declarative-agent-lifecycle.md). Deploy any separate API or MCP backend compute with ATK or Azure tooling.
 
 ## Custom Engine Agents (M365 SDK-based)
 

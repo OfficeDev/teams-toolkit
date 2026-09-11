@@ -1,11 +1,19 @@
 ---
 name: microsoft-365-agents-toolkit
-description: "Builds, tests, and deploys Microsoft 365 apps and agents for Teams and Copilot. Includes sub-skills for project creation, local testing, cloud deployment, troubleshooting, and Slack-to-Teams migration. USE FOR: Teams agent, bot, tab, message extension, Declarative Agents, Custom Engine Agents, local testing, Agents Playground, Azure resource provision, remote deployment, Slack to Teams migration, cross-platform bot development, Block Kit to Adaptive Cards conversion. DO NOT USE FOR: general web development, non-bot/non-Teams projects."
+description: "Builds, tests, and deploys Microsoft 365 apps and agents for Teams and Copilot. Uses WIQD for Declarative Agent creation, actions, validation, packaging, provisioning, sharing, publishing, and deletion; uses ATK for Custom Engine Agents, Teams bots, tabs, message extensions, Agents Playground, Teams runtime testing, and Azure backend deployment. USE FOR: Declarative Agents, Custom Engine Agents, Teams apps, local testing, deployment, troubleshooting, and Slack-to-Teams migration. DO NOT USE FOR: general web development or non-Microsoft-365 projects."
 ---
 
 # Microsoft 365 Agents Toolkit Skill
 
-Build Microsoft 365 agents and Teams apps using the ATK CLI.
+Build Declarative Agents with WIQD. Use ATK for non-DA Teams apps, code-based agents, runtime testing, and backend compute.
+
+## Declarative Agent Routing
+
+Treat a request or project as a DA when the user explicitly says Declarative Agent, `appPackage/declarativeAgent.json` exists, or `appPackage/manifest.json` contains `copilotAgents.declarativeAgents`. The presence of `m365agents.yml` does not override these markers.
+
+For DA lifecycle requests, follow [declarative-agent-lifecycle.md](toolkit/declarative-agent-lifecycle.md) directly. Use WIQD for the DA manifest and actions; if WIQD is unavailable, provide its installation guidance and stop instead of falling back to ATK. For a hybrid DA, use ATK or Azure tooling only for separate backend compute.
+
+Answer read-only DA schema, manifest, capability, example, and project-structure questions from local references without requiring WIQD installation or login.
 
 ## AI Behavior Guidelines
 
@@ -98,11 +106,11 @@ Resolve config values only when missing. If a value is already known in the sess
 
 ### Step 1: Detect ATK Project
 
-If `m365agentstoolkit*.yml` exists in the current folder, treat it as an ATK project and parse configuration.
+Check the Declarative Agent markers above first. If none match and `m365agents*.yml` exists in the current folder, treat it as an ATK project and parse configuration.
 
 ### Step 2: Resolve Common Configuration
 
-Resolve variables referenced in `m365agentstoolkit*.yml`. Common variables:
+Resolve variables referenced in `m365agents*.yml`. Common variables:
 AZURE_OPENAI_API_KEY
 AZURE_OPENAI_ENDPOINT
 AZURE_OPENAI_DEPLOYMENT_NAME

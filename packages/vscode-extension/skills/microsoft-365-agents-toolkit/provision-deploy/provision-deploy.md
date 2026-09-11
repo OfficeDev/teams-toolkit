@@ -2,6 +2,8 @@
 
 Provision Azure and M365 resources, then deploy your agent to the cloud.
 
+For a Declarative Agent, follow [declarative-agent-lifecycle.md](../toolkit/declarative-agent-lifecycle.md). Use this ATK workflow only for non-DA projects or a hybrid DA's separate backend compute; a pure DA has no compute to deploy.
+
 ## Local Provisioning (for Teams testing)
 
 ```bash

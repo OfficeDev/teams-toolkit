@@ -2,6 +2,8 @@
 
 Reference for `appPackage/` files (manifest, declarative agent definition) and the field-by-field reference for `m365agents.yml` actions.
 
+Use this file directly for read-only schema and manifest questions without requiring WIQD installation or login. For DA lifecycle execution, use [declarative-agent-lifecycle.md](declarative-agent-lifecycle.md). The ATK YAML and `.localConfigs` guidance applies to non-DA projects and backend compute.
+
 For environment files, `${{VAR}}` resolution, `.localConfigs` flow, and the env-var catalog, see [environments.md](environments.md).
 For the lifecycle YAML structure (provision/deploy/publish stages, action ordering, full anatomy), see [lifecycle-cli.md](lifecycle-cli.md).
 

@@ -1783,6 +1783,7 @@ export class FxCore extends FxCoreOpenPluginPart {
       telemetryReporter: TOOLS.telemetryReporter,
       projectPath: projectPath,
       platform: inputs.platform,
+      nonInteractive: inputs.nonInteractive,
     };
     const lifecycle = projectModel[lifecycleName_];
     if (lifecycle) {

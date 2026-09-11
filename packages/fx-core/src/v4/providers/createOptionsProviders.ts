@@ -11,6 +11,7 @@ import {
   ValidationStatus,
 } from "@microsoft/m365-spec-parser";
 import fs from "fs-extra";
+import { capabilityDeclarations } from "../capabilities/declarations";
 import { OptionsProvider } from "../collectInputs/collectInputs";
 import { MCPFetchResult } from "../../common/mcpToolFetcher";
 import { type ODRServer } from "../../common/odrProvider";
@@ -50,7 +51,9 @@ export function createMcpServerTypesProvider(
   localServers: () => Promise<ODRServer[]>
 ): OptionsProvider {
   return {
-    derivedSchema: ["catalog"],
+    derivedSchema: capabilityDeclarations.provider.mcpServerTypes.outputs.map(
+      (output) => output.name
+    ),
     async fetch(params) {
       if (params.selected === remoteMcpServerType.id) {
         return { options: [remoteMcpServerType], derived: { catalog: "{}" } };
@@ -131,7 +134,9 @@ function sortOperations(operations: ListAPIInfo[]): ListAPIInfo[] {
 }
 
 export const openApiOperationsProvider: OptionsProvider = {
-  derivedSchema: ["apiSpecLocation"],
+  derivedSchema: capabilityDeclarations.provider.openApiOperations.outputs.map(
+    (output) => output.name
+  ),
   async fetch(params) {
     const apiSpecLocation = params.apiSpecLocation?.trim();
     if (!apiSpecLocation) {
@@ -239,7 +244,7 @@ export function createMcpToolsProvider(
   fetchTools: (serverUrl: string) => Promise<MCPFetchResult>
 ): OptionsProvider {
   return {
-    derivedSchema: ["toolsJson"],
+    derivedSchema: capabilityDeclarations.provider.mcpTools.outputs.map((output) => output.name),
     async fetch(params) {
       let toolsJson = params.toolsJson?.trim();
       const toolsFilePath = params.toolsFilePath?.trim();
@@ -301,10 +306,11 @@ export function createDefaultCreateOptionsProviders(
   const localServers = createLocalServerCache(listLocalMcpServers);
   return {
     [CREATE_LANGUAGES_PROVIDER]: createLanguageOptionsProvider(languageContext),
-    "mcp.serverTypes": createMcpServerTypesProvider(localServers),
-    "mcp.localServers": createLocalMcpServersProvider(localServers),
-    "mcp.tools": createMcpToolsProvider(fetchTools),
-    "openapi.search": createOpenApiSearchProvider(searchApiSpec),
-    "openapi.operations": openApiOperationsProvider,
+    [capabilityDeclarations.provider.mcpServerTypes.id]: createMcpServerTypesProvider(localServers),
+    [capabilityDeclarations.provider.mcpLocalServers.id]:
+      createLocalMcpServersProvider(localServers),
+    [capabilityDeclarations.provider.mcpTools.id]: createMcpToolsProvider(fetchTools),
+    [capabilityDeclarations.provider.openApiSearch.id]: createOpenApiSearchProvider(searchApiSpec),
+    [capabilityDeclarations.provider.openApiOperations.id]: openApiOperationsProvider,
   };
 }

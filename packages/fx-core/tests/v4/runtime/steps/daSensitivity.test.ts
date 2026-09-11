@@ -10,6 +10,7 @@ import {
   STEP_SET_SENSITIVITY_LABEL,
   createDaSetSensitivityLabelStep,
 } from "../../../../src/v4/runtime/steps/daSensitivity";
+import { DaManifestService } from "../../../../src/v4/runtime/services/daManifestService";
 import { assert } from "vitest";
 
 function makeContext(labelId: string | undefined): {
@@ -19,25 +20,30 @@ function makeContext(labelId: string | undefined): {
 } {
   const mutations: Array<{ path: string; id: string }> = [];
   const ctx: StepContext = {
-    read: (): Buffer | undefined => undefined,
-    write: (): void => undefined,
+    read: () => {
+      throw new Error("the step must not read manifests directly");
+    },
+    write: () => {
+      throw new Error("the step must not write manifests directly");
+    },
     writeEnvironment: () => Promise.resolve(ok(undefined)),
-    manifestWrapper: () => ({
+  };
+  const step = createDaSetSensitivityLabelStep(
+    { resolveId: async (): Promise<string | undefined> => labelId },
+    {
       registerDeclarativeAgentAction: (): Result<void, FxError> => ok(undefined),
-      setSensitivityLabel: (path: string, id: string): Result<void, FxError> => {
+      setSensitivityLabel: (io, path, id): Result<void, FxError> => {
+        assert.strictEqual(io, ctx);
         mutations.push({ path, id });
         return ok(undefined);
       },
-    }),
-  };
-  const step = createDaSetSensitivityLabelStep({
-    resolveId: async (): Promise<string | undefined> => labelId,
-  });
+    }
+  );
   return { step, ctx, mutations };
 }
 
 describe(STEP_SET_SENSITIVITY_LABEL, () => {
-  it("SENS-01: resolves the General label and applies it through the DA wrapper", async () => {
+  it("SENS-01: resolves the General label and applies it through the injected DA service", async () => {
     const { step, ctx, mutations } = makeContext("general-label-id");
 
     const result = await step.apply({ manifestPath: "appPackage/declarativeAgent.json" }, ctx);
@@ -61,6 +67,28 @@ describe(STEP_SET_SENSITIVITY_LABEL, () => {
     const { step } = makeContext(undefined);
     assert.isDefined(step.validateParams({}));
     assert.isDefined(step.validateParams({ manifestPath: "" }));
+  });
+
+  it("SENS-02: the default manifest service performs no I/O without a label id", async () => {
+    const { ctx } = makeContext(undefined);
+    const step = createDaSetSensitivityLabelStep({ resolveId: async () => undefined });
+    const result = await step.apply({ manifestPath: "appPackage/declarativeAgent.json" }, ctx);
+    assert.isTrue(result.isOk());
+  });
+
+  it("preserves the missing-wrapper-method error for a malformed runtime service", async () => {
+    const manifests: DaManifestService = {
+      registerDeclarativeAgentAction: () => ok(undefined),
+      setSensitivityLabel: () => ok(undefined),
+    };
+    Reflect.deleteProperty(manifests, "setSensitivityLabel");
+    const step = createDaSetSensitivityLabelStep(
+      { resolveId: async () => "general-label-id" },
+      manifests
+    );
+    const { ctx } = makeContext(undefined);
+    const result = await step.apply({ manifestPath: "appPackage/declarativeAgent.json" }, ctx);
+    assert.strictEqual(result._unsafeUnwrapErr().name, "DaSensitivityLabelWrapperMissing");
   });
 
   it("returns a SystemError when the manifest cannot be read", async () => {
@@ -89,7 +117,6 @@ describe(STEP_SET_SENSITIVITY_LABEL, () => {
         read: port.read,
         write: port.write,
         writeEnvironment: port.writeEnvironment,
-        manifestWrapper: port.manifestWrapper,
       }
     );
 
@@ -124,7 +151,6 @@ describe(STEP_SET_SENSITIVITY_LABEL, () => {
         read: port.read,
         write: port.write,
         writeEnvironment: port.writeEnvironment,
-        manifestWrapper: port.manifestWrapper,
       }
     );
 
@@ -156,7 +182,6 @@ describe(STEP_SET_SENSITIVITY_LABEL, () => {
         read: port.read,
         write: port.write,
         writeEnvironment: port.writeEnvironment,
-        manifestWrapper: port.manifestWrapper,
       }
     );
 
@@ -200,7 +225,6 @@ describe(STEP_SET_SENSITIVITY_LABEL, () => {
         read: port.read,
         write: port.write,
         writeEnvironment: port.writeEnvironment,
-        manifestWrapper: port.manifestWrapper,
       }
     );
 

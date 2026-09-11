@@ -4,6 +4,7 @@
 import { APIPluginManifestWrapper, FxError, SystemError, UserError } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { Result, err, ok } from "neverthrow";
+import { capabilityDeclarations } from "../../capabilities/declarations";
 import { MCPFetchResult, fetchMCPTools } from "../../../common/mcpToolFetcher";
 import { parseMcpStaticToolsJson, selectMcpStaticTools } from "../../mcp/mcpStaticTools";
 import { RegisteredStep, StepContext, StepParams } from "../../pipeline/runScaffoldPipeline";
@@ -19,7 +20,8 @@ export const mcpStaticDeps = {
 };
 
 /** Engine step name `mcp-static/materialize-tools`. */
-export const STEP_MATERIALIZE_STATIC_MCP_TOOLS = "mcp-static/materialize-tools";
+export const STEP_MATERIALIZE_STATIC_MCP_TOOLS =
+  capabilityDeclarations.step.materializeStaticMcpTools.id;
 
 function systemError(name: string, message: string): SystemError {
   return new SystemError({ source: SOURCE, name, message });

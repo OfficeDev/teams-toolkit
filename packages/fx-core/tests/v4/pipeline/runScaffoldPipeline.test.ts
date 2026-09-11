@@ -14,8 +14,9 @@ import { assert } from "vitest";
 import { defineStep } from "../../../src/v4/pipeline/defineStep";
 import { PACKAGE_PARSE_ERROR, prepareTemplate } from "../../../src/v4/runtime/packageParse";
 import { scaffold, scaffoldPrepared } from "../../../src/v4/runtime/scaffold";
+import { DaManifestService } from "../../../src/v4/runtime/services/daManifestService";
+import { createDaActionRegisterPluginManifestStep } from "../../../src/v4/runtime/steps/daAction";
 import {
-  ManifestWrapper,
   PIPELINE_CROSS_STEP_REFERENCE,
   PIPELINE_PARAMS_VIOLATION,
   PIPELINE_UNKNOWN_PIPELINE,
@@ -76,14 +77,18 @@ function renderMustache(template: string, vars: RenderVars): Result<string, FxEr
   return ok(out);
 }
 
-/** Records every manifest mutation as the wrapper's action shape (AC-12 observability). */
-class RecordingWrapper implements ManifestWrapper {
+/** Records every manifest mutation at the domain service (AC-12 observability). */
+class RecordingDaManifestService implements DaManifestService {
   registrations: Array<{ teamsManifestPath: string; pluginManifestPath: string }> = [];
   registerDeclarativeAgentAction(
+    _io: Pick<StepContext, "read" | "write">,
     teamsManifestPath: string,
     pluginManifestPath: string
   ): Result<void, FxError> {
     this.registrations.push({ teamsManifestPath, pluginManifestPath });
+    return ok(undefined);
+  }
+  setSensitivityLabel(): Result<void, FxError> {
     return ok(undefined);
   }
 }
@@ -113,13 +118,11 @@ function makePort(opts: { pipelines?: string[]; steps?: Record<string, Registere
   port: PipelineRuntimePort;
   writes: Map<string, Buffer>;
   environmentWrites: Array<{ environment: string; values: Record<string, string> }>;
-  wrapper: RecordingWrapper;
   warnings: string[];
 } {
   const writes = new Map<string, Buffer>();
   const environmentWrites: Array<{ environment: string; values: Record<string, string> }> = [];
   const warnings: string[] = [];
-  const wrapper = new RecordingWrapper();
   const pipelines = new Set(
     opts.pipelines ?? ["default", "openapi", "typespec", "officeAddin", "spfx"]
   );
@@ -139,7 +142,6 @@ function makePort(opts: { pipelines?: string[]; steps?: Record<string, Registere
       return r.isErr() ? err(r.error) : ok(r.value === true);
     },
     render: (mustache, vars) => renderMustache(mustache, vars),
-    manifestWrapper: () => wrapper,
     warn: (warning) => warnings.push(warning.content),
     write: (path, data) => {
       writes.set(path, data);
@@ -150,7 +152,7 @@ function makePort(opts: { pipelines?: string[]; steps?: Record<string, Registere
       return Promise.resolve(ok(undefined));
     },
   };
-  return { port, writes, environmentWrites, wrapper, warnings };
+  return { port, writes, environmentWrites, warnings };
 }
 
 function entry(path: string, body: string): TemplateFileEntry {
@@ -654,25 +656,22 @@ describe("runScaffoldPipeline (v4)", () => {
     assert.instanceOf(resC._unsafeUnwrapErr(), SystemError);
   });
 
-  it("AC-12: a manifest mutation is applied through the injected wrapper, never raw JSON", async () => {
-    const register = new FakeStep({
-      run: (r, ctx) => {
-        const file = typeof r.pluginManifestPath === "string" ? r.pluginManifestPath : "";
-        return ctx
-          .manifestWrapper("declarativeAgent")
-          .registerDeclarativeAgentAction("appPackage/manifest.json", file);
-      },
-    });
+  it("AC-12: a manifest mutation is applied through the injected service, never raw JSON", async () => {
+    const manifests = new RecordingDaManifestService();
+    const register = createDaActionRegisterPluginManifestStep(manifests);
     const pipeline: Pipeline = {
       pipeline: "default",
       steps: [
         {
           step: "da-action/register-plugin-manifest",
-          with: { pluginManifestPath: "appPackage/ai-plugin-{{MCPNamespace}}.json" },
+          with: {
+            teamsManifestPath: "appPackage/manifest.json",
+            pluginManifestPath: "appPackage/ai-plugin-{{MCPNamespace}}.json",
+          },
         },
       ],
     };
-    const { port, wrapper } = makePort({
+    const { port } = makePort({
       steps: { "da-action/register-plugin-manifest": register },
     });
     const res = await runScaffoldPipeline(
@@ -683,7 +682,7 @@ describe("runScaffoldPipeline (v4)", () => {
       port
     );
     assert.isTrue(res.isOk());
-    assert.deepStrictEqual(wrapper.registrations, [
+    assert.deepStrictEqual(manifests.registrations, [
       {
         teamsManifestPath: "appPackage/manifest.json",
         pluginManifestPath: "appPackage/ai-plugin-apigithubc.json",
@@ -768,14 +767,8 @@ describe("runScaffoldPipeline (v4)", () => {
   });
 
   it("AC-15: the modify pipeline — three steps run in order; render writes only absent files", async () => {
-    const register = new FakeStep({
-      run: (r, ctx) => {
-        const file = typeof r.pluginManifestPath === "string" ? r.pluginManifestPath : "";
-        return ctx
-          .manifestWrapper("declarativeAgent")
-          .registerDeclarativeAgentAction("appPackage/manifest.json", file);
-      },
-    });
+    const manifests = new RecordingDaManifestService();
+    const register = createDaActionRegisterPluginManifestStep(manifests);
     const inject = new FakeStep();
     const persist = new FakeStep();
     const pipeline: Pipeline = {
@@ -800,7 +793,7 @@ describe("runScaffoldPipeline (v4)", () => {
         },
       ],
     };
-    const { port, writes, wrapper } = makePort({
+    const { port, writes } = makePort({
       steps: {
         "da-action/register-plugin-manifest": register,
         "mcp-auth/inject-yml-action": inject,
@@ -827,7 +820,7 @@ describe("runScaffoldPipeline (v4)", () => {
     ]);
     assert.deepStrictEqual(outcome.written, ["appPackage/ai-plugin-apigithubc.json"]);
     assert.isTrue(writes.has("appPackage/ai-plugin-apigithubc.json"));
-    assert.deepStrictEqual(wrapper.registrations, [
+    assert.deepStrictEqual(manifests.registrations, [
       {
         teamsManifestPath: "appPackage/manifest.json",
         pluginManifestPath: "appPackage/ai-plugin-apigithubc.json",

@@ -5,6 +5,7 @@ import type { FxError } from "@microsoft/teamsfx-api";
 import { err, ok } from "neverthrow";
 import type { Result } from "neverthrow";
 import semver from "semver";
+import type { CapabilityKind } from "../capabilities/declarations";
 import { readDescriptorLanguages } from "../distribution/descriptorLanguages";
 
 /** Pure v4 template-package validation gate. See validate-template-package spec and ADR-0015. */
@@ -30,7 +31,7 @@ export interface ContentFile {
 export type SchemaValidator = (data: unknown) => string | undefined;
 
 /** Template-visible extension-point categories with source-owned introduction versions. */
-export type CapabilityKind = "step" | "provider" | "validator";
+export type { CapabilityKind } from "../capabilities/declarations";
 
 /** Narrow validation port; schema, package, and engine-context data stay injected. */
 export interface TemplatePackagePort {

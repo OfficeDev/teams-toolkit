@@ -3,6 +3,7 @@
 
 import { FxError, SystemError } from "@microsoft/teamsfx-api";
 import { Result, err, ok } from "neverthrow";
+import { capabilityDeclarations } from "../../capabilities/declarations";
 import { RegisteredStep } from "../../pipeline/runScaffoldPipeline";
 import { defineStep } from "../../pipeline/defineStep";
 import { stringParam, stringArrayParam } from "../../pipeline/stepParams";
@@ -12,7 +13,8 @@ import { stringParam, stringArrayParam } from "../../pipeline/stepParams";
 const SOURCE = "Scaffold";
 
 /** Engine step name `mcp-local/materialize-servers`. */
-export const STEP_MATERIALIZE_LOCAL_SERVERS = "mcp-local/materialize-servers";
+export const STEP_MATERIALIZE_LOCAL_SERVERS =
+  capabilityDeclarations.step.materializeLocalServers.id;
 
 function systemError(name: string, message: string): SystemError {
   return new SystemError({ source: SOURCE, name, message });

@@ -79,6 +79,12 @@ the same shared `localizePrefixedText` the Q2 + common-floor bridge uses
 ([`collect-create-inputs`](collect-create-inputs.md)), so Q1 and Q2/Q3 share one
 localization mechanism.
 
+The create and modify entry points share this presentation implementation, per
+[ADR-0025](../../../02-architecture/adr/ADR-0025-scaffold-extension-ownership.md)
+OWN-05/06. Both consume localization keys, feature labels, icons and option
+visibility. Package-kind lookup, create resume/history and each entry point's
+return/error contract remain separate; this does not introduce another walk.
+
 ## Inputs
 
 | Input | Type | Origin |

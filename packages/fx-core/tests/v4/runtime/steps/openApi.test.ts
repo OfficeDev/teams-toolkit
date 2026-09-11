@@ -9,7 +9,7 @@ import { SystemError, UserError } from "@microsoft/teamsfx-api";
 import { ok } from "neverthrow";
 import { featureFlagManager } from "../../../../src/common/featureFlags";
 import { StepContext } from "../../../../src/v4/pipeline/runScaffoldPipeline";
-import { NOOP_MANIFEST_WRAPPER, STEP_REGISTRY } from "../../../../src/v4/runtime/runtimeRegistry";
+import { STEP_REGISTRY } from "../../../../src/v4/runtime/runtimeRegistry";
 import {
   STEP_GENERATE_OPENAPI_PLUGIN_FILES,
   STEP_GENERATE_TEAMS_AI_CUSTOM_API_FILES,
@@ -205,7 +205,6 @@ function makeCtx(initial: Record<string, string> = {}): {
         files.set(filePath, data);
       },
       writeEnvironment: () => Promise.resolve(ok(undefined)),
-      manifestWrapper: () => NOOP_MANIFEST_WRAPPER,
     },
   };
 }

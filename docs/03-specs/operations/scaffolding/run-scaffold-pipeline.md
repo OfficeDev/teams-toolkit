@@ -52,10 +52,21 @@ step phase.
 | `targetDir`  | the project output path + its current file set                                               | the create entry (ADR-0014)                                                                                       |
 | `port`       | narrow `PipelineRuntimePort`                                                                 | injected; an in-memory fake in tests                                                                              |
 
+### Domain service ownership
+
+[ADR-0025](../../../02-architecture/adr/ADR-0025-scaffold-extension-ownership.md)
+refines the dependency boundary: DA manifest operations are provided by a
+domain service injected into DA step factories, not by the generic pipeline
+port or `StepContext`. The service receives the current step's `read`/`write`
+context and uses the manifest package wrappers. References to `manifestWrapper`
+in the compatibility ACs below describe this wrapper-routing guarantee, not a
+method on the generic context. OWN-01/02 in ADR-0025 cover service injection and
+per-runtime isolation. No domain dependency is discovered by the executor.
+
 This operation does **not** depend on the full `ScaffoldRuntime`
 (`{ fs, http, archive, clock, binaryCache }`, proposal §8). It declares the
 narrow `PipelineRuntimePort` it actually uses (interface-segregation), which the
-full runtime composes later:
+  full runtime composes later:
 
 | Port face          | Shape                                          | Responsibility                                                                                                                                                                                                                                                 |
 | ------------------ | ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -63,9 +74,8 @@ full runtime composes later:
 | `pipelineRegistry` | `(pipelineName) => Orchestration \| undefined` | the engine's whitelist of named pipelines (`default \| openapi \| typespec \| officeAddin \| spfx`)                                                                                                                                                            |
 | `evalWhen`         | `(expr, renderVars) => boolean`                | the shared closed-expression evaluator (ADR-0016 §4.3)                                                                                                                                                                                                         |
 | `renderValue`      | `(mustache, renderVars) => string`             | the same Mustache surface `content/**` uses, applied to `with` values                                                                                                                                                                                          |
-| `manifestWrapper`  | `(kind) => Wrapper`                            | the `packages/manifest` wrapper a manifest step MUST route through (decision 3)                                                                                                                                                                                |
 | `fs`               | `{ exists; render; write }`                    | the render-phase file sink (existence-keyed, never overwrites)                                                                                                                                                                                                 |
-| `read`             | `(path) => Buffer \| undefined`                | the read-modify-write face a **non-manifest** step uses to rewrite a render-phase file (e.g. `mcp-auth/inject-yml-action` appending to `m365agents.yml`); `undefined` if the path is absent. Manifest mutation still routes through `manifestWrapper` (INV-3)  |
+| `read`             | `(path) => Buffer \| undefined`                | per-invocation file reads for steps and injected domain services; `undefined` if absent. Manifest services still parse and mutate through the manifest package wrappers (INV-3), not raw JSON. |
 | `writeEnvironment` | `(env, values) => Result<void, FxError>`       | the runtime-owned environment writer used by named credential steps; the real runtime delegates to the shared env utility so `SECRET_*` values are encrypted into the user env, while in-memory tests expose a separate secret sink rather than ordinary files |
 
 ## Outputs

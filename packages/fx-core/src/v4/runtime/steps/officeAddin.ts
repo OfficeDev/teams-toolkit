@@ -6,6 +6,7 @@ import * as fs from "fs-extra";
 import * as officeAddinProject from "office-addin-project";
 import * as path from "path";
 import { Result, err, ok } from "neverthrow";
+import { capabilityDeclarations } from "../../capabilities/declarations";
 import { RegisteredStep, StepContext } from "../../pipeline/runScaffoldPipeline";
 import { defineStep } from "../../pipeline/defineStep";
 import { stringParam } from "../../pipeline/stepParams";
@@ -15,7 +16,8 @@ import { withTempDirectory } from "../withTempDirectory";
 
 const SOURCE = "Scaffold";
 
-export const STEP_IMPORT_EXISTING_OFFICE_ADDIN_PROJECT = "officeaddin/import-existing-project";
+export const STEP_IMPORT_EXISTING_OFFICE_ADDIN_PROJECT =
+  capabilityDeclarations.step.importExistingOfficeAddinProject.id;
 
 const RENDERED_CONFIG_FILES = [
   ".gitignore",

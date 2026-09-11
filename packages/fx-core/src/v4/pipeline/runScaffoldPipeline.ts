@@ -3,6 +3,7 @@
 
 import { FxError, SystemError, UserError, Warning } from "@microsoft/teamsfx-api";
 import { Result, err, ok } from "neverthrow";
+import { capabilityDeclarations } from "../capabilities/declarations";
 import { ConditionalExpression, evaluateConditionalWhen } from "../expression/evaluateExpression";
 import { RenderVars, TemplateFileEntry } from "../model/dataModel";
 import { getLocalizedString } from "../../common/localizeUtils";
@@ -13,7 +14,7 @@ import { prepareStep } from "./defineStep";
 const SOURCE = "Scaffold";
 
 /** Built-in guard that must run before rendering so a violation writes nothing. */
-const STEP_REQUIRE_EMPTY_TARGET = "require-empty-target";
+const STEP_REQUIRE_EMPTY_TARGET = capabilityDeclarations.step.requireEmptyTarget.id;
 
 const TPL_SUFFIX = ".tpl";
 
@@ -81,15 +82,6 @@ export interface Orchestration {
   name: string;
 }
 
-/** Minimal manifest wrapper face needed by registered steps. */
-export interface ManifestWrapper {
-  registerDeclarativeAgentAction(
-    teamsManifestPath: string,
-    pluginManifestPath: string
-  ): Result<void, FxError>;
-  setSensitivityLabel?(path: string, id: string): Result<void, FxError>;
-}
-
 /** The capabilities the executor hands each registered step's `apply`. */
 export interface StepContext {
   write(path: string, data: Buffer): void;
@@ -98,7 +90,6 @@ export interface StepContext {
     environment: string,
     values: Record<string, string>
   ): Promise<Result<void, FxError>>;
-  manifestWrapper(kind: string): ManifestWrapper;
   /** Read current bytes at a target path, or `undefined` when absent. */
   read(path: string): Buffer | undefined;
   /**
@@ -129,7 +120,6 @@ export interface PipelineRuntimePort {
   stepRegistry(stepName: string): RegisteredStep | undefined;
   evalWhen(expr: string, renderVars: RenderVars): Result<boolean, FxError>;
   render(mustache: string, renderVars: RenderVars): Result<string, FxError>;
-  manifestWrapper(kind: string): ManifestWrapper;
   warn?(warning: Warning): void;
   write(path: string, data: Buffer): void;
   writeEnvironment(
@@ -336,7 +326,6 @@ export async function runScaffoldPipeline(
   const ctx: StepContext = {
     write: (path, data) => port.write(path, data),
     writeEnvironment: (environment, values) => port.writeEnvironment(environment, values),
-    manifestWrapper: (kind) => port.manifestWrapper(kind),
     read: (path) => port.read(path),
     warn: port.warn,
   };

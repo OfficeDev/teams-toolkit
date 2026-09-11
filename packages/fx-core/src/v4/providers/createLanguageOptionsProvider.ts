@@ -3,11 +3,12 @@
 
 import { FxError, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { Result, err, ok } from "neverthrow";
+import { capabilityDeclarations } from "../capabilities/declarations";
 import { OptionItem, OptionsProvider } from "../collectInputs/collectInputs";
 import { readDescriptorLanguages } from "../distribution/descriptorLanguages";
 import { getLocalizedString } from "../../common/localizeUtils";
 
-export const CREATE_LANGUAGES_PROVIDER = "create.languages";
+export const CREATE_LANGUAGES_PROVIDER = capabilityDeclarations.provider.createLanguages.id;
 
 const LANGUAGE_LABELS: Record<string, string> = {
   javascript: "JavaScript",

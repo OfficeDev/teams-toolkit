@@ -3,6 +3,7 @@
 
 import { SystemError } from "@microsoft/teamsfx-api";
 import { Result, err, ok } from "neverthrow";
+import { capabilityDeclarations } from "../../capabilities/declarations";
 import { RegisteredStep } from "../../pipeline/runScaffoldPipeline";
 import { defineStep } from "../../pipeline/defineStep";
 import { stringParam, stringArrayParam } from "../../pipeline/stepParams";
@@ -13,10 +14,10 @@ import { injectMcpAuthAction, persistMcpAuthRegistrationEnv } from "../../mcp/mc
 const SOURCE = "Scaffold";
 
 /** Engine step name `mcp-auth/inject-yml-action`. */
-export const STEP_INJECT_YML_ACTION = "mcp-auth/inject-yml-action";
+export const STEP_INJECT_YML_ACTION = capabilityDeclarations.step.injectYmlAction.id;
 
 /** Engine step name `mcp-auth/persist-credential-env`. */
-export const STEP_PERSIST_CREDENTIAL_ENV = "mcp-auth/persist-credential-env";
+export const STEP_PERSIST_CREDENTIAL_ENV = capabilityDeclarations.step.persistCredentialEnv.id;
 
 function systemError(name: string, message: string): SystemError {
   return new SystemError({ source: SOURCE, name, message });

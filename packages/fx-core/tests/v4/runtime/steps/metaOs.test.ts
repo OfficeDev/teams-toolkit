@@ -13,7 +13,6 @@ import {
   metaOsUpgradeExistingProject,
 } from "../../../../src/v4/runtime/steps/metaOs";
 import { StepContext } from "../../../../src/v4/pipeline/runScaffoldPipeline";
-import { NOOP_MANIFEST_WRAPPER } from "../../../../src/v4/runtime/runtimeRegistry";
 import { assert, expect } from "vitest";
 
 function makeCtx(initial: Record<string, string> = {}): {
@@ -32,7 +31,6 @@ function makeCtx(initial: Record<string, string> = {}): {
         files.set(filePath, data);
       },
       writeEnvironment: () => Promise.resolve(ok(undefined)),
-      manifestWrapper: () => NOOP_MANIFEST_WRAPPER,
     },
   };
 }

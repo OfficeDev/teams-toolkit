@@ -8,6 +8,7 @@ import { FxError, SystemError, TeamsManifestWrapper, UserError } from "@microsof
 import * as fs from "fs-extra";
 import * as path from "path";
 import { Result, err, ok } from "neverthrow";
+import { capabilityDeclarations } from "../../capabilities/declarations";
 import { RegisteredStep, StepContext } from "../../pipeline/runScaffoldPipeline";
 import { defineStep } from "../../pipeline/defineStep";
 import { stringParam } from "../../pipeline/stepParams";
@@ -17,9 +18,9 @@ import { stringParam } from "../../pipeline/stepParams";
 const SOURCE = "Scaffold";
 
 /** Engine step name `metaos/unify-project-id`. */
-export const STEP_UNIFY_PROJECT_ID = "metaos/unify-project-id";
+export const STEP_UNIFY_PROJECT_ID = capabilityDeclarations.step.unifyProjectId.id;
 /** Engine step name `metaos/upgrade-existing-project`. */
-export const STEP_UPGRADE_EXISTING_PROJECT = "metaos/upgrade-existing-project";
+export const STEP_UPGRADE_EXISTING_PROJECT = capabilityDeclarations.step.upgradeExistingProject.id;
 
 const APP_PACKAGE_FOLDER = "appPackage";
 const MANIFEST_PATH = "appPackage/manifest.json";

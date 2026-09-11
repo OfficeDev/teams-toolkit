@@ -36,6 +36,7 @@ import { getParserOptions } from "../../../common/openApiParserOptions";
 import { isValidHttpUrl } from "../../../common/stringUtils";
 import { isJsonSpecFile } from "../../../common/utils";
 import { ProgrammingLanguage } from "../../../question/constants";
+import { capabilityDeclarations } from "../../capabilities/declarations";
 import { RegisteredStep, StepContext, StepParams } from "../../pipeline/runScaffoldPipeline";
 import { defineStep } from "../../pipeline/defineStep";
 import { stringParam, stringArrayParam } from "../../pipeline/stepParams";
@@ -47,8 +48,10 @@ import { AuthRegistration, injectOpenApiAuthActions } from "./openApiAuth";
 
 const SOURCE = "Scaffold";
 
-export const STEP_GENERATE_OPENAPI_PLUGIN_FILES = "openapi/generate-plugin-files";
-export const STEP_GENERATE_TEAMS_AI_CUSTOM_API_FILES = "openapi/generate-teams-ai-custom-api-files";
+export const STEP_GENERATE_OPENAPI_PLUGIN_FILES =
+  capabilityDeclarations.step.generateOpenApiPluginFiles.id;
+export const STEP_GENERATE_TEAMS_AI_CUSTOM_API_FILES =
+  capabilityDeclarations.step.generateTeamsAiCustomApiFiles.id;
 
 const MANIFEST_PATH = `${AppPackageFolderName}/${ManifestTemplateFileName}`;
 const AGENT_PATH = `${AppPackageFolderName}/declarativeAgent.json`;

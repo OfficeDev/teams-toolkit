@@ -1,6 +1,7 @@
 # ADR-0017 — Named pipeline + step whitelist + domain-typed step naming
 
 - **Status:** Accepted
+- **Partial supersession:** [ADR-0025](ADR-0025-scaffold-extension-ownership.md) replaces the generic context's manifest adapter with a service injected into domain step factories. Manifest-wrapper routing and the whitelist/template contracts remain binding.
 - **Date:** 2026-05-28 (Accepted 2026-06-08)
 - **Source:** [`scaffolding.create.proposal.md` §14](../scaffolding.create.proposal.md#14-adrs-this-proposal-will-be-decomposed-into)
   (decomposes §§3.3, 3.3.1; invariants 5–7). Validated against

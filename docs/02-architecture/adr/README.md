@@ -43,6 +43,7 @@ decision. The format for a new ADR is defined inline below under
 | ADR-0022 | [Ownership of host-agnostic manifest-template resolution](ADR-0022-manifest-template-resolution-ownership.md) | Accepted | Internal concern — cross-host `file()`/`${{ENV}}` resolver reuse in PR #16525 |
 | ADR-0023 | [Create input policy ownership](ADR-0023-create-input-policy-ownership.md) | Accepted | Keep template presentation and capability-specific derivation out of the generic create engine; partially supersedes ADR-0016. |
 | ADR-0024 | [Scaffold domain assets and expression ownership](ADR-0024-scaffold-domain-assets.md) | Accepted | Separate expression registration, externalize generation fragments, and replace comment-based OpenAPI YAML insertion. |
+| ADR-0025 | [Scaffolding extension ownership](ADR-0025-scaffold-extension-ownership.md) | Accepted | Inject DA services into domain steps, share pure capability declarations and selector presentation; refines ADR-0017's manifest injection boundary. |
 
 > **Reading order vs. numeric order.** The Index is in **numeric order** —
 > the immutable, reservation-ordered ADR id is the anchor for every forward

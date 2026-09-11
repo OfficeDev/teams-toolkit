@@ -86,6 +86,9 @@ function makePort(p: PackageParts): TemplatePackagePort {
       selector: () => p.schemaSelectorError,
     },
     capabilityFloor: (kind, id) => {
+      if (kind === "provider" && id === "create.languages") {
+        return "6.12.0";
+      }
       if (kind === "step" && id === "da/set-sensitivity-label") {
         return "6.11.0";
       }
@@ -109,6 +112,38 @@ function makePort(p: PackageParts): TemplatePackagePort {
 }
 
 describe("v4/validation/validateTemplatePackage", () => {
+  for (const languageOptions of [[{ id: "python" }, { id: "python" }], [{ id: "javascript" }]]) {
+    it(`CLEAN-02: package validation rejects invalid presentation ${JSON.stringify(languageOptions)}`, () => {
+      const parts = validParts();
+      parts.engineVersion = "6.12.0";
+      parts.descriptor = {
+        id: "mcp-server",
+        languages: ["python"],
+        languageOptions,
+        minEngineVersion: "6.12.0",
+        replaceMap: [{ var: "MCPNamespace", const: "ns" }],
+      };
+      const result = validateTemplatePackage("create", "mcp-server", "load", makePort(parts));
+      assert.isTrue(result.isErr());
+      assert.equal(result._unsafeUnwrapErr().name, VALIDATE_SCHEMA);
+    });
+  }
+
+  it("CLEAN-07: presentation metadata requires the language provider capability floor", () => {
+    const parts = validParts();
+    parts.engineVersion = "6.12.0";
+    parts.descriptor = {
+      id: "mcp-server",
+      languages: ["python"],
+      languageOptions: [{ id: "python", description: "Preview" }],
+      minEngineVersion: "6.11.0",
+      replaceMap: [{ var: "MCPNamespace", const: "ns" }],
+    };
+    const result = validateTemplatePackage("create", "mcp-server", "load", makePort(parts));
+    assert.isTrue(result.isErr());
+    assert.equal(result._unsafeUnwrapErr().name, "TemplatePackageCapabilityFloor");
+  });
+
   it("AC-02: descriptor.json absent -> UserError naming it required", () => {
     const parts = validParts();
     parts.descriptor = undefined;

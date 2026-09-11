@@ -7,7 +7,7 @@ import { getLocalizedString } from "../../common/localizeUtils";
 import { ResolvedMCPAuthEndpoints, injectMcpAuthActionYaml } from "./mcpAuthAction";
 import { probeMCPServerAuth, resolveMCPOAuthMetadata } from "../../common/mcpToolFetcher";
 import { StepContext } from "../pipeline/runScaffoldPipeline";
-import { deriveMcpServerName } from "../runtime/whitelist";
+import { deriveMcpServerName } from "../runtime/functions/mcp";
 
 /**
  * v4 MCP-auth facade. The v4-owned YAML action mutator produces the create/add auth action shape

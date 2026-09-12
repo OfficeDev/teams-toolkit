@@ -353,19 +353,15 @@
       "parameters": {
         "button": "left",
         "x": 327,
-        "y": 402
+        "y": 500
       },
-      "description": "Click on the \"Message Copilot\" input box in the Il Ristorante chat interface within the M365 Copilot web application, positioning the cursor to start a new message.",
+      "description": "Click on the \"Message Il Ristorante\" input box in the Il Ristorante chat interface within the M365 Copilot web application, positioning the cursor to start a new message.",
       "content_refs": [],
       "timeout": 30,
       "retry_count": 0,
       "continue_on_error": "false",
       "depends_on": [],
-      "preconditions": [
-        "dhash:327:402:16:5:00000164e6622a6a",
-        "dhash:327:402:96:5:0021802124000020",
-        "dhash:327:402:0:10:34b8e6e6f8d2e2e4"
-      ],
+      "preconditions": [],
       "postconditions": [],
       "tags": [
         "delay: 30",
@@ -388,9 +384,7 @@
       "retry_count": 0,
       "continue_on_error": "false",
       "depends_on": [],
-      "preconditions": [
-        "dhash:512:384:0:20:34b8e6e6f8c2e2e4"
-      ],
+      "preconditions": [],
       "postconditions": [],
       "tags": [],
       "screenshot": "step_84e8ba69",
@@ -410,9 +404,7 @@
       "retry_count": 0,
       "continue_on_error": "false",
       "depends_on": [],
-      "preconditions": [
-        "dhash:512:384:0:20:34b8e6e6f8c2e2e4"
-      ],
+      "preconditions": [],
       "postconditions": [],
       "tags": [],
       "screenshot": "step_450b02f8",

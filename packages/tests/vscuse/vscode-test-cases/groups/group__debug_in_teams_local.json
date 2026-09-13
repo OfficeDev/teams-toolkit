@@ -400,7 +400,7 @@
       "agent": "assertion",
       "tool": "",
       "parameters": {},
-      "description": "@assertion the Microsoft Teams app details page for an app whose name starts with ${{var:app_name}} is visible.",
+      "description": "@assertion the Microsoft Teams app details page for the graph-connector-applocal sample is visible.",
       "content_refs": [],
       "timeout": 30,
       "retry_count": 0,

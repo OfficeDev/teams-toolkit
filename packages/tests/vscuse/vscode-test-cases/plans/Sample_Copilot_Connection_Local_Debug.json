@@ -344,7 +344,7 @@
         "x": 141,
         "y": 19
       },
-      "description": "Click the Microsoft Teams browser tab containing the ${{var:app_name}}local app details page to switch back from the localhost certificate tab.",
+      "description": "Click the Microsoft Teams browser tab containing the graph-connector-applocal app details page to switch back from the localhost certificate tab.",
       "content_refs": [],
       "timeout": 30,
       "retry_count": 0,
@@ -450,7 +450,7 @@
       "agent": "assertion",
       "tool": "",
       "parameters": {},
-      "description": "@assertion the Microsoft Teams tab page for an app whose name starts with ${{var:app_name}} is open.",
+      "description": "@assertion the Microsoft Teams tab page for the graph-connector-applocal sample is open.",
       "content_refs": [],
       "timeout": 30,
       "retry_count": 0,

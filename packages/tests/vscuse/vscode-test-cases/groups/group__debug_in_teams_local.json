@@ -8,7 +8,7 @@
       "precondition_wait_timeout": 60,
       "precondition_retry_interval": 2
     },
-    "total_steps": 13,
+    "total_steps": 10,
     "created_at": "2026-06-05T07:17:53.766103",
     "name": "group: debug_in_teams_local",
     "description": {
@@ -27,10 +27,7 @@
       "step_abda900e",
       "step_a527f679",
       "step_7f03643c",
-      "step_afa29596",
-      "step_31620d1e",
-      "step_7f090e7d",
-      "step_22db8609"
+      "step_afa29596"
     ],
     "tags": [
       "group"
@@ -252,7 +249,7 @@
       "agent": "assertion",
       "tool": "",
       "parameters": {},
-      "description": "@assertion there's \"Add\" or \"Open\" blue button exist.",
+      "description": "@assertion the Microsoft Teams chat interface is visible with a \"Type a message\" input.",
       "content_refs": [],
       "timeout": 30,
       "retry_count": 0,
@@ -265,80 +262,6 @@
       ],
       "screenshot": null,
       "created_at": "2026-06-05T09:07:45.987858",
-      "plan_id": "plan_r_0930_083113"
-    },
-    {
-      "step_id": "step_31620d1e",
-      "agent": "interaction",
-      "tool": "click",
-      "parameters": {
-        "button": "left",
-        "x": 288,
-        "y": 214
-      },
-      "description": "Click the \"Open\" or \"Add\" button on the app details popup for the ${{var:app_name}}local app within the Microsoft Teams interface.",
-      "content_refs": [],
-      "timeout": 30,
-      "retry_count": 0,
-      "continue_on_error": "false",
-      "depends_on": [],
-      "preconditions": [
-        "dhash:288:214:16:5:05100a0511030b12",
-        "dhash:288:214:96:5:2616011c1c01005b",
-        "dhash:288:214:0:10:00b4b0d8f8fcf0d8"
-      ],
-      "postconditions": [],
-      "tags": [],
-      "screenshot": "step_31620d1e",
-      "created_at": "2026-06-05T09:07:45.996452",
-      "plan_id": "plan_r_0930_083113"
-    },
-    {
-      "step_id": "step_7f090e7d",
-      "agent": "assertion",
-      "tool": "",
-      "parameters": {},
-      "description": "@assertion there's \"open\" blue button exist.",
-      "content_refs": [],
-      "timeout": 30,
-      "retry_count": 0,
-      "continue_on_error": "false",
-      "depends_on": [],
-      "preconditions": [],
-      "postconditions": [],
-      "tags": [
-        "step_retry_timeout: 180"
-      ],
-      "screenshot": null,
-      "created_at": "2026-06-05T09:07:46.005866",
-      "plan_id": "plan_r_0930_083113"
-    },
-    {
-      "step_id": "step_22db8609",
-      "agent": "interaction",
-      "tool": "click",
-      "parameters": {
-        "button": "left",
-        "x": 533,
-        "y": 508
-      },
-      "description": "Click the \"Open\" button in the \"Let's go\" or \"Added successfully!\" dialog for the ${{var:app_name}}local app within Microsoft Teams web interface.",
-      "content_refs": [],
-      "timeout": 30,
-      "retry_count": 0,
-      "continue_on_error": "false",
-      "depends_on": [],
-      "preconditions": [
-        "dhash:533:508:16:5:00987494ca4acacc",
-        "dhash:533:508:96:5:000058a48598e36b",
-        "dhash:533:508:0:10:1669696969696979"
-      ],
-      "postconditions": [],
-      "tags": [
-        "precondition_wait_timeout: 120"
-      ],
-      "screenshot": "step_22db8609",
-      "created_at": "2026-06-05T09:07:46.013714",
       "plan_id": "plan_r_0930_083113"
     }
   ],
